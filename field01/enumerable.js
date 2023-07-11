@@ -87,7 +87,58 @@ const mySample = (ary, num = 1) => {
   return newArray
 }
 
-console.log(globalThis)
+// puts(mySample([1, 2, 3, 4, 5, 6, 7]))
+// puts(mySample([1, 2, 3, 4, 5, 6, 7], 4))
 
-puts(mySample([1, 2, 3, 4, 5, 6, 7]))
-puts(mySample([1, 2, 3, 4, 5, 6, 7], 4))
+const myFilterMap = (ary, callback) => {
+  const newArray = [];
+  for(const i of ary){
+    const result = callback(i)
+    if (result){
+      newArray.push(result)
+    }
+  }
+  return newArray;
+}
+
+puts(myFilterMap([1, 2, 3, 4, 5, 6, 7, 8], (i) => {
+    if (i % 2 === 0) {
+      return i * 2
+    }
+  })
+)
+
+const myPartition = (ary, callback) => {
+  const trueArray = [];
+  const falseArray = [];
+
+  for (const element of ary) {
+    const bool = callback(element)
+    if (bool) {
+      trueArray.push(element);
+    } else {
+      falseArray.push(element);
+    }
+  }
+
+  return [trueArray, falseArray];
+}
+const myMax = (ary, num = 1) => {
+  const newArray = [...ary]
+  if (num === 1) {
+    return  newArray.sort((a, b) => b - a).at(0);
+  } else {
+    return  newArray.sort((a, b) => b - a).slice(0, num);
+  }
+};
+
+puts(
+  myMax([3, 5, 8, 2, 10, 4, 6, 11], 3) // 11
+);
+
+// 次回js回ラスト
+// - grep_v
+// - inject
+// - zip
+// slice
+
