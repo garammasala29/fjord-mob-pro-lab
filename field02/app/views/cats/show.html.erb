@@ -1,0 +1,17 @@
+<div id="<%= dom_id @cat %>">
+  <p>
+    <strong>名前:</strong>
+    <%= @cat.name %>
+  </p>
+
+  <p>
+    <strong>年齢:</strong>
+    <%= @cat.age %>
+  </p>
+</div>
+
+<div>
+  <%= link_to "編集", edit_cat_path(@cat) %> |
+  <%= link_to "戻る", cats_path %>
+  <%= button_to "削除", @cat, method: :delete %>
+</div>
