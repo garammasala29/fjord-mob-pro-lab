@@ -1,2 +1,0 @@
-class Chick < ApplicationRecord
-end
