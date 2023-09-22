@@ -1,0 +1,12 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+development:
+  <<: *default
+  database: cat_hotwire_development
+production:
+  <<: *default
+  database: cat_hotwire_production
+  username: cat_hotwire
+  password: <%= ENV["CAT_HOTWIRE_DATABASE_PASSWORD"] %>
