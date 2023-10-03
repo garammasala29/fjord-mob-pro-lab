@@ -11,7 +11,15 @@
   </div>
 
   <div class="card-body">
-    <%= search_form_for @search, html: { data: { turbo_frame: "cats-list" } } do |f| %>
+    <%= search_form_for(
+     @search,
+     html: {
+       data: {
+         turbo_frame: "cats-list",
+         controller: "form",
+         action: "input->form#submit"
+       }
+     }) do |f| %>
       <div class="row g3 mb-3">
         <div class="col-4 col-xl-2">
           <%= f.label :name_cont, "名前", class: "form-label" %>
@@ -22,7 +30,6 @@
           <%= f.search_field :age_eq, class: "form-control" %>
         </div>
         <div class="col-4 d-flex align-items-end">
-          <%= button_tag(icon_with_text("search", "検索"), class: "btn btn-primary me-1") %>
           <%= link_to "リセット", cats_path, class: "btn btn-outline-secondary" %>
         </div>
       </div>
@@ -37,7 +44,7 @@
   </div>
 
   <div class="card-body mx-3">
-    <%= turbo_frame_tag "cats-list" do %>
+    <%= turbo_frame_tag "cats-list", data: { turbo_action: :advance } do %>
       <div class="row py-2">
         <div class="col-4 mt-auto">
           <%= sort_link(@search, :name) %>
@@ -49,19 +56,21 @@
           <%= link_to icon_with_text("plus-circle", "登録"),
                       new_cat_path,
                       class: "btn btn-outline-primary",
-                      data: { turbo_frame: "new_cat" }
+                      data: { turbo_frame: "modal" }
           %>
         </div>
       </div>
 
-      <%= turbo_frame_tag "new_cat" %>
       <div id="cats">
-        <%= render @cats %>
-      </div>
+       <%# 今のページの`<turbo-frame>` %>
+       <%= turbo_frame_tag "cats-page-#{@cats.current_page}" do %>
+         <%# 今のページで取得したCat一覧 %>
+         <%= render @cats %>
 
-      <div class="d-flex justify-content-end mt-3">
-        <%= paginate @cats %>
-      </div>
+         <%# 遅延読み込みで次ページを取得する`<turbo-frame>` %>
+         <%= turbo_frame_tag "cats-page-#{@cats.next_page}", loading: :lazy, src: path_to_next_page(@cats) %>
+       <% end %>
+     </div>
     <% end %>
   </div>
 </div>
