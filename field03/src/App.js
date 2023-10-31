@@ -9,15 +9,15 @@ function Square({value, onSquareClick}) {
 }
 
 export function Board({ xIsNext, squares, onPlay }) {
-  function handleClick(i) {
-    if (squares[i] || calculateWinner(squares)) {
+  function handleClick(i, j) {
+    if (squares[i][j] || calculateWinner(squares)) {
       return;
     }
-    const nextSquares = squares.slice();
+    const nextSquares = JSON.parse(JSON.stringify(squares));
     if (xIsNext) {
-      nextSquares[i] = 'X';
+      nextSquares[i][j] = 'X';
     } else {
-      nextSquares[i] = 'O';
+      nextSquares[i][j] = 'O';
     }
     onPlay(nextSquares);
   }
@@ -38,10 +38,10 @@ export function Board({ xIsNext, squares, onPlay }) {
         {status}
         {[0, 1, 2].map((i) => {
           return (
-          <div className="board-row">
+          <div key={i} className="board-row">
             {
               [0, 1, 2].map((j) => {
-                return <Square value={squares[i][j]} onSquareClick={() => handleClick(i, j)} />
+                return <Square key={[i, j]} value={squares[i][j]} onSquareClick={() => handleClick(i, j)} />
               })
             }
           </div>)
@@ -52,23 +52,41 @@ export function Board({ xIsNext, squares, onPlay }) {
 }
 
 function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+  let result = false
+  squares.some((row) => {
+    if (row.every((cell) => cell === 'O')) {
+      result = 'O'
+      return true
+    } else if (row.every((cell) => cell === 'X')) {
+      result = 'X'
+      return true
+    } else {
+      return false
     }
+  })
+
+  const transposed_squares = [0, 1, 2].map(i => squares.map(row => row[i]))
+  transposed_squares.some((row) => {
+    if (row.every((cell) => cell === 'O')) {
+      result = 'O'
+      return true
+    } else if (row.every((cell) => cell === 'X')) {
+      result = 'X'
+      return true
+    } else {
+      return false
+    }
+  })
+
+  if (squares[0][0] && squares[0][0] === squares[1][1] && squares[0][0] === squares[2][2]) {
+    result = squares[0][0]
+  } else if (squares[0][2] && squares[0][2] === squares[1][1] && squares[0][2] === squares[2][0]) {
+    result = squares[0][2]
   }
-  if (squares.some((square) => square == null)) {
+
+  if (result) {
+    return result
+  } else if (squares.some((row) => row.some((cell) => cell == null))) {
     return null;
   } else {
     return 'draw';
@@ -82,7 +100,7 @@ export default function Game() {
   const currentSquares = history[currentMove];
 
   function handlePlay(nextSquares) {
-    const newHistory = JSON.parse(JSON.stringify(slice(0, currentMove + 1)))
+    const newHistory = JSON.parse(JSON.stringify(history.slice(0, currentMove + 1)))
     const nextHistory = [...newHistory, nextSquares];
     setHistory(nextHistory);
     setCurrentMove(nextHistory.length - 1);
