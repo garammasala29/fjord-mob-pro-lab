@@ -1,37 +1,34 @@
 import { useState } from "react";
 import EditingArea from "./EditingArea";
+import NoteList from "./NoteList ";
 
 type Note = {
-  id: number;
+  id: string;
   title: string;
   content: string;
 };
 
 const defaultNotes: Note[] = [
-  { id: 1, title: "title1", content: "memo1" },
-  { id: 2, title: "title2", content: "memo2" },
+  { id: crypto.randomUUID(), title: "title1", content: "memo1" },
+  { id: crypto.randomUUID(), title: "title2", content: "memo2" },
 ];
 
 function App() {
-  const [id, setId] = useState(
-    Math.max(...defaultNotes.map(({ id }) => id)) + 1
-  );
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState("");
   const [notes, setNotes] = useState<Note[]>(defaultNotes);
-  const [targetId, setTargetId] = useState(-1);
+  const [targetId, setTargetId] = useState("");
 
   const handleOnEdit = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const id = Number(e.currentTarget.id);
-    setTargetId(id);
-    const note = notes.find((note) => note.id === id);
+    setTargetId(e.currentTarget.id);
+    const note = notes.find((note) => note.id === e.currentTarget.id);
     if (note) setText(`${note.title}\n${note.content}`);
     setIsEditing(true);
   };
 
   const handleOnDelete = () => {
     setNotes(notes.filter((note) => note.id !== targetId));
-    setTargetId(-1);
+    setTargetId("");
     setText("");
     setIsEditing(false);
   };
@@ -51,7 +48,7 @@ function App() {
     const makeNote = () => {
       const [newTitle, ...rest] = text.split("\n");
       const newContent = rest.join("\n");
-      return { id: id, title: newTitle, content: newContent };
+      return { id: crypto.randomUUID(), title: newTitle, content: newContent };
     };
 
     const newNote = makeNote();
@@ -63,29 +60,17 @@ function App() {
       setNotes(copyNotes);
     } else {
       const newNotes = [...copyNotes, newNote];
-      setId((id) => id + 1);
       setNotes(newNotes);
     }
     setText("");
-    setTargetId(-1);
+    setTargetId("");
+    setIsEditing(false);
   };
 
   return (
     <div className="App">
       <h1>メモアプリ！</h1>
-      <ul>
-        {notes.map((note) => {
-          return (
-            <li key={note.id}>
-              {
-                <button onClick={handleOnEdit} id={`${note.id}`}>
-                  {note.title}
-                </button>
-              }
-            </li>
-          );
-        })}
-      </ul>
+      <NoteList notes={notes} handleOnEdit={handleOnEdit} />
       <button onClick={handleOnNew}>+</button>
       {isEditing && (
         <EditingArea>
