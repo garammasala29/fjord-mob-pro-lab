@@ -44,3 +44,42 @@ end
 # 次の動作をする OriginalAccessor モジュール を実装する
 # - OriginalAccessorモジュールはincludeされたときのみ、my_attr_accessorメソッドを定義すること
 # - my_attr_accessorはgetter/setterに加えて、boolean値を代入した際のみ真偽値判定を行うaccessorと同名の?メソッドができること
+module OriginalAccessor
+  def self.included(klass)
+    values = {}
+
+    klass.define_singleton_method(:my_attr_accessor) do |attr|
+      klass.define_method(attr) do
+        values[attr]
+      end
+
+      klass.define_method("#{attr}=") do |value|
+        values[attr] = value
+
+        if value.is_a?(TrueClass) || value.is_a?(FalseClass)
+          klass.define_method("#{attr}?") do
+            !!value
+          end
+        end
+      end
+    end
+  end
+end
+
+class User
+  include OriginalAccessor
+  my_attr_accessor :name
+  my_attr_accessor :age
+  my_attr_accessor :adult
+end
+
+# taro = User.new
+# # setter
+# taro.name = 'taro'
+# taro.age = 23
+# taro.is_adult = true
+# taro.is_adult = false
+# taro.is_adult? # => false
+
+# taro.name #=> taro
+# taro.age #=> 2

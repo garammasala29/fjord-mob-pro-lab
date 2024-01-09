@@ -6,7 +6,18 @@ TryOver3 = Module.new
 # - `test_` メソッドがこのクラスに実装されていなくても `test_` から始まるメッセージに応答することができる
 # - TryOver3::A1 には `test_` から始まるインスタンスメソッドが定義されていない
 
+class TryOver3::A1
+  def run_test
+  end
 
+  def method_missing(method_name, *)
+    if method_name.start_with?('test_')
+      run_test
+    else
+      super
+    end
+  end
+end
 # Q2
 # 以下要件を満たす TryOver3::A2Proxy クラスを作成してください。
 # - TryOver3::A2Proxy は initialize に TryOver3::A2 のインスタンスを受け取り、それを @source に代入する
@@ -18,6 +29,20 @@ class TryOver3::A2
   end
 end
 
+class TryOver3::A2Proxy
+  def initialize(instance)
+    @source = instance
+  end
+
+  def method_missing(method_name,*)
+    @source.send(method_name,*)
+  end
+
+  def respond_to_missing(*)
+    # ここが違う気がする？
+    @source.respond_to?(*)
+  end
+end
 
 # Q3.
 # 02_define.rbのQ3ではOriginalAccessor の my_attr_accessor で定義した getter/setter に
