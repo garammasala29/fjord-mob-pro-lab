@@ -38,7 +38,7 @@ class TryOver3::A2Proxy
     @source.send(method_name,*)
   end
 
-  def respond_to_missing(*)
+  def respond_to_missing?(*)
     # ここが違う気がする？
     @source.respond_to?(*)
   end
@@ -62,6 +62,8 @@ module TryOver3::OriginalAccessor2
           self.class.define_method "#{name}?" do
             @attr == true
           end
+        else
+          mod.remove_method("#{name}?") if respond_to?("#{name}?")
         end
         @attr = value
       end
@@ -76,7 +78,23 @@ end
 # TryOver3::A4::Hoge.run
 # # => "run Hoge"
 # このとき、TryOver3::A4::Hogeという定数は定義されません。
+class TryOver3::A4
+  def self.runners=(constants)
+    @constants = constants
+  end
 
+  def self.const_missing(const)
+    if @constants.include?(const)
+      obj = Object.new
+      obj.define_singleton_method(:run) do
+        "run #{const}"
+      end
+      obj
+    else
+      super
+    end
+  end
+end
 
 # Q5. チャレンジ問題！ 挑戦する方はテストの skip を外して挑戦してみてください。
 #

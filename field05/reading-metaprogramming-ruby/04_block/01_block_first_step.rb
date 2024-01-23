@@ -3,6 +3,10 @@
 #    実行例: MyMath.new.two_times { 2 } #=> 4
 
 class MyMath
+  def two_times
+    # ブロックを評価した結果がyieldの戻り値
+    yield * 2
+  end
 end
 
 # Q2.
@@ -12,13 +16,18 @@ end
 # AcceptBlockクラスは問題側で用意している(テスト中に実装している)ため実装の必要はありません。
 
 MY_LAMBDA = -> { 3 }
+AcceptBlock.call(&MY_LAMBDA)
 
 # Q3.
 # MyBlockクラスにblock_to_procインスタンスメソッドを定義しましょう。block_to_procインスタンスメソッドはブロックを受け取り、
 # そのブロックをProcオブジェクトにしたものを返します
 
 class MyBlock
+  def block_to_proc(&block)
+    block
+  end
 end
+
 
 # Q4.
 # MyClosureクラスにincrementインスタンスメソッドを定義しましょう。このincrementメソッドは次のように数値を1ずつインクリメントして返します
@@ -35,4 +44,9 @@ end
 # さらなる制限として、カウンターとして利用する変数はローカル変数を利用してください(これはテストにはないですが頑張ってローカル変数でテストを通るようにしてみてください)
 
 class MyClosure
+  count = 0
+
+  define_method(:increment) do
+    count += 1
+  end
 end
