@@ -17,4 +17,11 @@ RSpec.describe Suica do
     suica = Suica.new
     expect{suica.charge(0.1)}.to raise_error Suica::FloatAmountError
   end
+
+  it '120円のコーラを購入したら残高が120減ること' do
+    suica = Suica.new
+    suica.charge(1000)
+    suica.pay(120)
+    expect(suica.balance).to eq 880
+  end
 end
