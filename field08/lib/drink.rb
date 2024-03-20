@@ -6,6 +6,8 @@ class Drink
     @price = price
   end
 
+  private
+
   def eql?(other)
     self.name == other.name && self.price == other.price
   end
