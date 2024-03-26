@@ -26,6 +26,9 @@ RSpec.describe VendingMachine do
 
     before do
       allow(suica).to receive(:pay).and_return nil
+      allow(suica).to receive(:age).and_return 25
+      allow(suica).to receive(:gender).and_return 'male'
+      allow(Time).to receive(:now).and_return '2024-06-21 13:30:00 +0900'
     end
 
     it '購入すると在庫が1つ減ること' do
@@ -39,6 +42,12 @@ RSpec.describe VendingMachine do
       vending_machine.buy('コーラ', suica)
 
       expect(vending_machine.sales).to be 120
+    end
+
+    it '販売履歴が取得できること' do
+      vending_machine.buy('コーラ', suica)
+
+      expect(vending_machine.sales_history['コーラ']).to eq [[25, 'male', '2024-06-21 13:30:00 +0900']]
     end
   end
 

@@ -4,10 +4,12 @@ class Suica
   class NegativeAmountError < StandardError; end
   class InsufficientAmountError < StandardError; end
 
-  attr_reader :balance
+  attr_reader :balance, :age, :gender
 
-  def initialize
+  def initialize(age, gender)
     @balance = 0
+    @age = age
+    @gender = gender
   end
 
   def charge(amount)

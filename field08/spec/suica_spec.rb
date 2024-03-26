@@ -1,7 +1,7 @@
 require_relative '../lib/suica.rb'
 
 RSpec.describe Suica do
-  let(:suica) { Suica.new }
+  let(:suica) { Suica.new(25, :male) }
 
   describe '#charge' do
     context '正常系' do
