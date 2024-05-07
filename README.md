@@ -15,7 +15,3 @@ RubyのEnumerableモジュールのメソッドをJavaScriptで実装しよう
 [チュートリアル：三目並べ – React](https://ja.react.dev/learn/tutorial-tic-tac-toe)をやってみよう
 
 目的：Reactの基礎を学ぶ
-
-## 第n回
-gemをつくる
-
