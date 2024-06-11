@@ -4,7 +4,9 @@
 # Usage: rec_factorial(5) #=> 120
 
 def rec_factorial(n)
-  # todo
+  return 1 if n <= 0
+
+  p n * rec_factorial(n-1)
 end
 
-
+rec_factorial(5)

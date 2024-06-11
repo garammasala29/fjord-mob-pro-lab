@@ -5,7 +5,9 @@
 #    rec_sum([10, 20, 30]) #=> 60
 #    rec_sum([]) #=> 0
 
-
 def rec_sum(ary)
-  # todo
+  return 0 if ary.empty?
+
+  first, *rest = ary
+  first + rec_sum(rest)
 end

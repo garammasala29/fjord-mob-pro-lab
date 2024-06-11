@@ -4,7 +4,7 @@
 # Usage: rec_factorial(5) #=> 120
 
 def rec_double_factorial(n)
-  # todo
+  return 1 if n <= 0
+
+  n * rec_double_factorial(n - 2)
 end
-
-

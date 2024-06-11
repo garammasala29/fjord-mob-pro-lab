@@ -6,5 +6,12 @@
 
 
 def rec_count(ary, target_obj)
-  #todo
+  return 0 if ary.empty?
+
+  obj = ary[-1]
+  obj == target_obj ? rec_count(ary[0..-2], target_obj) + 1 : rec_count(ary[0..-2], target_obj)
 end
+
+# p rec_count([1, 1, 2, 3, 1], 1) #=> 3
+# p rec_count([1, 1, 2, 3, 1], 'a') #=> 0
+# p rec_count(['a', 'b', 'c', 'b'], 'c') #=> 1

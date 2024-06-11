@@ -8,8 +8,9 @@
 #     1
 #     0
 
-\
 def rec_count_down(n)
-  # todo
+  return if n < 0
+  puts n
+  n -= 1
+  rec_count_down(n)
 end
-

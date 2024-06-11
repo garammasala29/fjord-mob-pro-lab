@@ -5,5 +5,9 @@
 
 
 def rec_append(target, ary)
+  return [] if ary.empty?
 
+  target_ary = ary[-1]
+  target_ary.unshift(target)
+  rec_append(target, ary[0..-2]) << target_ary
 end

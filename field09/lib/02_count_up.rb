@@ -8,7 +8,9 @@
 #     4
 #     5
 
-def rec_count_up(n)
-  # todo
+def rec_count_up(n, count = 0)
+  return if count > n
+  puts count
+  count += 1
+  rec_count_up(n, count)
 end
-
