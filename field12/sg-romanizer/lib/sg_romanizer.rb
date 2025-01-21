@@ -43,19 +43,6 @@ class SgRomanizer
     }
   ]
 
-  ARABIC_NUM = {
-    "X" => 10,
-    "IX" => 9,
-    "VIII" => 8,
-    "VII" => 7,
-    "VI" => 6,
-    "V" => 5,
-    "IV" => 4,
-    "III" => 3,
-    "II" => 2,
-    "I" => 1
-  }
-
   def romanize(arabic)
     roman_digits = arabic.digits.map.with_index do |d, i|
       ROME_NUM[i][d.to_s]
@@ -64,8 +51,11 @@ class SgRomanizer
   end
 
   def deromanize(roman)
-    # romans = ["X", "IX", "VIII", "VII", "VI", "V", "IV", "III", "II", "I"]
-    # romans.sum { |c| roman.include?(c) ? ARABIC_NUM[c] : 0 }
-    ARABIC_NUM[roman] || 0
+    arabic_num = ROME_NUM.map(&:invert)
+    second = roman.match(/X[CL]|L?(?<!I)X+|L/).to_s #2桁目
+    roman.delete_prefix!(second)
+    first = roman.match(/I[XV]|V?I+|V/).to_s || 0 #1桁目
+
+    arabic_num[1][second].to_i * 10 + arabic_num[0][first].to_i
   end
 end
