@@ -1,4 +1,6 @@
 class SgRomanizer
+  MAX_DIGITS = 4
+
   ROME_NUM = [
     {
       '0' => '',
@@ -51,11 +53,32 @@ class SgRomanizer
   end
 
   def deromanize(roman)
-    arabic_num = ROME_NUM.map(&:invert)
-    second = roman.match(/X[CL]|L?(?<!I)X+|L/).to_s #2桁目
-    roman.delete_prefix!(second)
-    first = roman.match(/I[XV]|V?I+|V/).to_s || 0 #1桁目
+    roman_digits = split_romans(roman)
 
-    arabic_num[1][second].to_i * 10 + arabic_num[0][first].to_i
+    calc_arabic(roman_digits)
+  end
+
+  private
+
+  def split_romans(roman)
+    digits_regex = [/(?<!C)M+/, /C[MD]|D?(?<!X)C+|D/, /X[CL]|L?(?<!I)X+|L/, /I[XV]|V?I+|V/]
+
+    rest_roman = roman
+    digits_regex.map do |regex|
+      rest_roman.match(regex).to_s.tap { |digits_roman|
+        rest_roman = rest_roman.delete_prefix(digits_roman)
+      }
+    end
+  end
+
+  def calc_arabic(roman_digits)
+    arabic_num = ROME_NUM.map(&:invert)
+    roman_digits.each_with_index.sum do |roman,i|
+      arabic_num[target_digit(i)][roman].to_i * 10 ** (target_digit(i))
+    end
+  end
+
+  def target_digit(i)
+    MAX_DIGITS-1-i
   end
 end
