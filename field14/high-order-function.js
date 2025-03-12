@@ -35,9 +35,73 @@ function rankedWords(wordScore, words) {
 
 const words = ['haskell', 'ruby', 'javascript', 'aaaaaaaa', 'c++']
 // 計算ロジックだけ渡したらうまいこと並び替えて欲しい
-console.log(rankedWords(score, words)) // => ["javascript", "haskell", "ruby", "c++", "aaaaaaaa" ]
-console.log(rankedWords((w) => score(w) + bonus(w), words)) // ["javascript", "c++", "haskell", "ruby", "aaaaaaaa"]
-console.log(rankedWords((w) => score(w) + bonus(w) - penalty(w), words))
+// console.log(rankedWords(score, words)) // => ["javascript", "haskell", "ruby", "c++", "aaaaaaaa" ]
+// console.log(rankedWords((w) => score(w) + bonus(w), words)) // ["javascript", "c++", "haskell", "ruby", "aaaaaaaa"]
+// console.log(rankedWords((w) => score(w) + bonus(w) - penalty(w), words))
 
 // 追加要件
 // word の　スコアをリスト化して欲しい
+
+// ["javascript", "haskell", "ruby", "c++", "aaaaaaaa" ]
+function wordScores(wordScore, words) {
+  return words.map(wordScore)
+}
+
+console.log(wordScores(score, words)) // =>=> [8, 6, 4, 3, 0]
+console.log(wordScores((w) => score(w) + bonus(w) - penalty(w), words)) // => [\d, \d, \d ...]
+
+// aを除いた文字を1点として点数を計算する
+
+// スコアが1より大きい単語のリストを返す関数
+
+function highScoreWords(wordScore, words) {
+  return words.filter((w) => wordScore(w) > 1)
+}
+
+console.log(highScoreWords((w) => score(w) + bonus(w) - penalty(w), words)) // ["javascript", "haskell", "ruby", "c++"]
+
+// スコアの閾値は現在は1だけど、複数モード用意したい
+// とりあえず、0, 1, 5 の3段階用意したい
+
+function highScoreWords(wordScore, words, higherThan) {
+  return words.filter((w) => wordScore(w) > higherThan)
+}
+
+highScoreWords(w => score(w) + bonus(w) - penalty(w), words, 1)
+highScoreWords(w => score(w) + bonus(w) - penalty(w), words, 0)
+highScoreWords(w => score(w) + bonus(w) - penalty(w), words, 5)
+
+// 高階関数(関数を返す関数)
+function highScoringWords(wordScore, words) {
+  return (higherThan) => words.filter((w) => wordScore(w) > higherThan)
+}
+
+const words1WithHighScoreThan = highScoreWords(w => score(w) + bonus(w) - penalty(w), words)
+const words2WithHighScoreThan = highScoreWords(w => score(w) + bonus(w) - penalty(w), words2)
+const words3WithHighScoreThan = highScoreWords(w => score(w) + bonus(w) - penalty(w), words3)
+words1WithHighScoreThan(5)
+words1WithHighScoreThan(1)
+words1WithHighScoreThan(0)
+words2WithHighScoreThan(5)
+words2WithHighScoreThan(1)
+words2WithHighScoreThan(0)
+
+function highScoringWords(wordScore) {
+  return (higherThan) => (words) => words.filter((w) => wordScore(w) > higherThan)
+}
+
+const wordsWithHighScoreThan = highScoringWords(w => score(w) + bonus(w) - penalty(w))
+wordsWithHighScoreThan(5)(words)
+wordsWithHighScoreThan(1)(words2)
+wordsWithHighScoreThan(3)(words3)
+
+
+function add(a, b) {
+  return a + b
+}
+
+cosnt add = (a) => (b) => a + b;
+add(1)(4) // => 5
+const plusOne = add(1)
+const plusTwo = add(2)
+plusOne(4) // => 5
