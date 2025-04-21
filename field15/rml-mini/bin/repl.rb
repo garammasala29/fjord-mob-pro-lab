@@ -12,7 +12,7 @@ loop do
 
   begin
     result = parser.eval(input)
-    puts "=> #{result}"
+    puts "#=> #{result}"
   rescue => e
     puts "残念! Errorだよ!"
     puts e.message
