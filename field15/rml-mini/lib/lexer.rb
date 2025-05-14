@@ -15,24 +15,18 @@ class Lexer
 
   def next_token
     skip_whitespace
-    return Token.new(:eol) if eol?
+    return Token.new(:eof) if eof?
 
     case current_char
     when /\d/ then read_number
-    when '+'
-      advance
-      Token.new(:plus)
-    when '-'
-      advance
-      Token.new(:minus)
-    when '*'
-      advance
-      Token.new(:asterisk)
-    when '/'
-      advance
-      Token.new(:slash)
+    when '+' then advance; Token.new(:plus)
+    when '-' then advance; Token.new(:minus)
+    when '*' then advance; Token.new(:asterisk)
+    when '/' then advance; Token.new(:slash)
+    when '(' then advance; Token.new(:l_paren)
+    when ')' then advance; Token.new(:r_paren)
     else
-      raise "予期せぬトークンです！： #{current_char}"
+      raise "Unknown character： #{current_char}"
     end
   end
 
@@ -57,7 +51,7 @@ class Lexer
     Token.new(:int, @input[start_index...@index].to_i)
   end
 
-  def eol?
+  def eof?
     @index >= @input.size
   end
 end
