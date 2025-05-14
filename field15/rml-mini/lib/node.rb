@@ -18,12 +18,12 @@ module Node
   end
 
   class BinaryOp < Base
-    attr_reader :left, :right, :op
+    attr_reader :lhs, :rhs, :op
 
-    def initialize(left, op, right)
-      @left = left
+    def initialize(lhs, op, rhs)
+      @lhs = lhs
       @op = op
-      @right = right
+      @rhs = rhs
     end
   end
 end
