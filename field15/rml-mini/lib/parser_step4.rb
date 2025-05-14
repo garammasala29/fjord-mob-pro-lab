@@ -1,9 +1,11 @@
 require_relative 'lexer'
 require_relative 'node'
 
+# このStep4からParserの中で評価するのではなく、評価はEvaluatorクラスへと責務を分離する
 class ParserStep4
-  def self.eval(input)
-    new(input).eval
+  # メソッドがevalからparseに変更されている
+  def self.parse(input)
+    new(input).parse
   end
 
   def initialize(input)
@@ -16,8 +18,11 @@ class ParserStep4
     ast = expr
 
     # エラー処理
+    if @current_token != :eof
+      raise "Unexpected token: #{@current_token.value}"
+    end
 
-    ast.evaluate
+    ast
   end
 
   private

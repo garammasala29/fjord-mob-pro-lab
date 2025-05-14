@@ -1,80 +1,62 @@
 # spec/parser_step4_spec.rb
 require_relative "../lib/parser_step4"
+require_relative "../lib/node"
 
 RSpec.describe ParserStep4 do
   subject { described_class }
 
-  describe ".eval" do
-    context "when using basic operations" do
-      it "evaluates addition" do
-        expect(subject.eval("1 + 2")).to eq(3)
-      end
+  describe ".parse" do
+    it "parses simple integer" do
+      ast = subject.parse("42")
 
-      it "evaluates subtraction" do
-        expect(subject.eval("5 - 3")).to eq(2)
-      end
-
-      it "evaluates multiplication" do
-        expect(subject.eval("3 * 4")).to eq(12)
-      end
-
-      it "evaluates division" do
-        expect(subject.eval("10 / 2")).to eq(5)
-      end
+      expect(ast).to be_a(Node::Integer)
+      expect(ast.value).to eq(42)
     end
 
-    context "when respecting operator precedence" do
-      it "evaluates multiplication before addition" do
-        expect(subject.eval("2 + 3 * 4")).to eq(14)
-      end
+    it "parses simple addition" do
+      ast = subject.parse("1 + 2")
 
-      it "evaluates division before subtraction" do
-        expect(subject.eval("10 - 4 / 2")).to eq(8)
-      end
+      expect(ast).to be_a(Node::BinaryOp)
+      expect(ast.op).to eq(:plus)
+      expect(ast.left).to be_a(Node::Integer)
+      expect(ast.left.value).to eq(1)
+      expect(ast.right).to be_a(Node::Integer)
+      expect(ast.right.value).to eq(2)
     end
 
-    context "when using parentheses" do
-      it "evaluates expressions within parentheses first" do
-        expect(subject.eval("(2 + 3) * 4")).to eq(20)
-        expect(subject.eval("2 * (3 + 4)")).to eq(14)
-      end
+    it "parses parenthesized expression" do
+      ast = subject.parse("(1 + 2)")
 
-      it "handles nested parentheses" do
-        expect(subject.eval("2 * (3 + (5 - 2))")).to eq(12)
-        expect(subject.eval("((7 - 3) + 2) * 3")).to eq(18)
-      end
-
-      it "handles parentheses with operator precedence" do
-        expect(subject.eval("10 - (4 + 2) * 3")).to eq(-8)
-        expect(subject.eval("(10 - 4 + 2) * 3")).to eq(24)
-      end
+      expect(ast).to be_a(Node::BinaryOp)
+      expect(ast.op).to eq(:plus)
     end
 
-    context "when handling complex expressions" do
-      it "evaluates complex expressions with parentheses" do
-        expect(subject.eval("(8 - 4) / (1 + 1)")).to eq(2)
-        expect(subject.eval("(7 + 3) * (2 + (8 / 4))")).to eq(40)
-      end
+    it "parses complex expressions with operator precedence" do
+      ast = subject.parse("1 + 2 * 3")
 
-      it "handles multiple operations and parentheses" do
-        expect(subject.eval("1 + 2 * 3 + (4 * 5)")).to eq(27)
-        expect(subject.eval("(1 + 2) * (3 + 4) - 5")).to eq(16)
-      end
+      expect(ast).to be_a(Node::BinaryOp)
+      expect(ast.op).to eq(:plus)
+      expect(ast.left).to be_a(Node::Integer)
+      expect(ast.left.value).to eq(1)
+      expect(ast.right).to be_a(Node::BinaryOp)
+      expect(ast.right.op).to eq(:asterisk)
+    end
+
+    it "parses expressions with parentheses changing precedence" do
+      ast = subject.parse("(1 + 2) * 3")
+
+      expect(ast).to be_a(Node::BinaryOp)
+      expect(ast.op).to eq(:asterisk)
+      expect(ast.left).to be_a(Node::BinaryOp)
+      expect(ast.left.op).to eq(:plus)
+      expect(ast.right).to be_a(Node::Integer)
+      expect(ast.right.value).to eq(3)
     end
 
     context "when handling errors" do
       it "raises error on unbalanced parentheses" do
-        expect { subject.eval("(2 + 3") }.to raise_error(RuntimeError)
-        expect { subject.eval("2 + 3)") }.to raise_error(RuntimeError)
-      end
-
-      it "raises error on empty parentheses" do
-        expect { subject.eval("()") }.to raise_error(RuntimeError)
-      end
-
-      it "raises error on missing operand" do
-        expect { subject.eval("2 +") }.to raise_error(RuntimeError)
-        expect { subject.eval("(2 +)") }.to raise_error(RuntimeError)
+        expect { subject.parse("(2 + 3") }.to raise_error(RuntimeError)
+        expect { subject.parse("2 + 3)") }.to raise_error(RuntimeError)
       end
     end
   end

@@ -25,19 +25,5 @@ module Node
       @op = op
       @right = right
     end
-
-    def evaluate
-      lhs = left.evaluate
-      rhs = right.evaluate
-
-      case op
-      when :plus then lhs + rhs
-      when :minus then lhs - rhs
-      when :asterisk then lhs * rhs
-      when :slash then lhs / rhs
-      else
-        raise "Unknown operator: #{op}"
-      end
-    end
   end
 end
