@@ -11,10 +11,6 @@ module Node
     def initialize(value)
       @value = value
     end
-
-    def evaluate
-      value
-    end
   end
 
   class BinaryOp < Base
