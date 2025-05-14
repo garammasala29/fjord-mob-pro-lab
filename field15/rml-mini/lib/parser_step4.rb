@@ -13,7 +13,7 @@ class ParserStep4
     @current_token = @lexer.next_token
   end
 
-  def eval
+  def parse
     # ASTを構築し、評価する
     ast = expr
 
