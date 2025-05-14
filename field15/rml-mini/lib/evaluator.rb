@@ -3,11 +3,12 @@ class Evaluator
   def evaluate(node)
     case node
     when Node::Integer
-      # :TODO:
+      node.value
     when Node::BinaryOp
-      # :TODO:
+      lhs = evaluate(node.lhs)
+      rhs = evaluate(node.rhs)
 
-      eval_binary_op()
+      eval_binary_op(lhs, node.op, rhs)
     else
       raise "Unknown node type: #{node.class}"
     end

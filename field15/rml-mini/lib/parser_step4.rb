@@ -18,7 +18,7 @@ class ParserStep4
     ast = expr
 
     # エラー処理
-    if @current_token != :eof
+    if @current_token.type != :eof
       raise "Unexpected token: #{@current_token.value}"
     end
 
@@ -28,18 +28,57 @@ class ParserStep4
   private
   # 以下は再帰下降構文解析
   def expr
-    # :TODO:
+    result = term
+
+    while %i[plus minus].include?(@current_token.type)
+      op = @current_token.type
+      consume(op)
+      rhs = term
+
+      result = Node::BinaryOp.new(result, op, rhs)
+    end
+
+    result
   end
 
   def term
-    # :TODO:
+    result = factor
+
+    while %i[asterisk slash].include?(@current_token.type)
+      op = @current_token.type
+      consume(op)
+      rhs = factor
+
+      result = Node::BinaryOp.new(result, op, rhs)
+    end
+
+    result
   end
 
   def factor
-    # :TODO:
+    token = @current_token
+
+    case token.type
+    when :int
+      consume(:int)
+
+      Node::Integer.new(token.value)
+    when :l_paren
+      consume(:l_paren)
+      result = expr # かっこの中は式がある
+      consume(:r_paren)
+
+      result
+    else
+      raise "Expected integer or '(', got: #{token.type}"
+    end
   end
 
   def consume(expected_type)
-    # :TODO:
+    if @current_token.type != expected_type
+      raise "Expected #{expected_type}, got: #{@current_token.type}"
+    end
+
+    @current_token = @lexer.next_token
   end
 end
