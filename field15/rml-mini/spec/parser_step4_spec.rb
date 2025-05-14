@@ -18,10 +18,10 @@ RSpec.describe ParserStep4 do
 
       expect(ast).to be_a(Node::BinaryOp)
       expect(ast.op).to eq(:plus)
-      expect(ast.left).to be_a(Node::Integer)
-      expect(ast.left.value).to eq(1)
-      expect(ast.right).to be_a(Node::Integer)
-      expect(ast.right.value).to eq(2)
+      expect(ast.lhs).to be_a(Node::Integer)
+      expect(ast.lhs.value).to eq(1)
+      expect(ast.rhs).to be_a(Node::Integer)
+      expect(ast.rhs.value).to eq(2)
     end
 
     it "parses parenthesized expression" do
@@ -36,10 +36,10 @@ RSpec.describe ParserStep4 do
 
       expect(ast).to be_a(Node::BinaryOp)
       expect(ast.op).to eq(:plus)
-      expect(ast.left).to be_a(Node::Integer)
-      expect(ast.left.value).to eq(1)
-      expect(ast.right).to be_a(Node::BinaryOp)
-      expect(ast.right.op).to eq(:asterisk)
+      expect(ast.lhs).to be_a(Node::Integer)
+      expect(ast.lhs.value).to eq(1)
+      expect(ast.rhs).to be_a(Node::BinaryOp)
+      expect(ast.rhs.op).to eq(:asterisk)
     end
 
     it "parses expressions with parentheses changing precedence" do
@@ -47,10 +47,10 @@ RSpec.describe ParserStep4 do
 
       expect(ast).to be_a(Node::BinaryOp)
       expect(ast.op).to eq(:asterisk)
-      expect(ast.left).to be_a(Node::BinaryOp)
-      expect(ast.left.op).to eq(:plus)
-      expect(ast.right).to be_a(Node::Integer)
-      expect(ast.right.value).to eq(3)
+      expect(ast.lhs).to be_a(Node::BinaryOp)
+      expect(ast.lhs.op).to eq(:plus)
+      expect(ast.rhs).to be_a(Node::Integer)
+      expect(ast.rhs.value).to eq(3)
     end
 
     context "when handling errors" do
