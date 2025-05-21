@@ -32,7 +32,7 @@ class Lexer
       advance
       Token.new(:slash)
     else
-      raise "予期せぬトークンです！： #{current_char}"
+      raise "Unknown character #{current_char}"
     end
   end
 
