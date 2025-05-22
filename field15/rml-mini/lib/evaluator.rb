@@ -1,3 +1,5 @@
+require_relative 'environment'
+
 class Evaluator
   # node を受け取って再帰的に評価する
   def evaluate(node)
