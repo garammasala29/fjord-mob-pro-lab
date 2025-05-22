@@ -1,11 +1,5 @@
 module Node
-  class Base
-    def evaluate
-      raise NotImplementedError, "#{self.class}#evaluate not implemented"
-    end
-  end
-
-  class Integer < Base
+  class Integer
     attr_reader :value
 
     def initialize(value)
@@ -13,13 +7,30 @@ module Node
     end
   end
 
-  class BinaryOp < Base
+  class BinaryOp
     attr_reader :lhs, :rhs, :op
 
     def initialize(lhs, op, rhs)
       @lhs = lhs
       @op = op
       @rhs = rhs
+    end
+  end
+
+  class Variable
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+  end
+
+  class Assignment
+    attr_reader :name, :value
+
+    def initialize(name, value)
+      @name = name
+      @value = value
     end
   end
 end

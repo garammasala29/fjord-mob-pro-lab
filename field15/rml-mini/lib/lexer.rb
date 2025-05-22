@@ -19,21 +19,25 @@ class Lexer
 
     case current_char
     when /\d/ then read_number
-    when '+'
-      advance
-      Token.new(:plus)
-    when '-'
-      advance
-      Token.new(:minus)
-    when '*'
-      advance
-      Token.new(:asterisk)
-    when '/'
-      advance
-      Token.new(:slash)
+    when /[a-zA-Z_]/ then read_identifier
+    when '+' then advance; Token.new(:plus)
+    when '-' then advance; Token.new(:minus)
+    when '*' then advance; Token.new(:asterisk)
+    when '/' then advance; Token.new(:slash)
+    when '(' then advance; Token.new(:l_paren)
+    when ')' then advance; Token.new(:r_paren)
+    when '=' then advance; Token.new(:equals)
     else
       raise "Unknown character #{current_char}"
     end
+  end
+
+  def peek_token
+    stored_index = @index
+    token = next_token
+    @index = stored_index
+
+    token
   end
 
   private
@@ -57,8 +61,23 @@ class Lexer
     Token.new(:int, @input[start_index...@index].to_i)
   end
 
+  def read_identifier
+    start_index = @index
+    advance while current_char&.match?(/\w/)
+
+    Token.new(:identifier, @input[start_index...@index])
+  end
+
   def eol?
     @index >= @input.size
+  end
+
+  def peek_token
+    stored_index = @index
+    token = next_token
+    @index = stored_index
+
+    token
   end
 end
 
