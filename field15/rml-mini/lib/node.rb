@@ -1,11 +1,5 @@
 module Node
-  class Base
-    def evaluate
-      raise NotImplementedError, "#{self.class}#evaluate not implemented"
-    end
-  end
-
-  class Integer < Base
+  class Integer
     attr_reader :value
 
     def initialize(value)
@@ -13,7 +7,7 @@ module Node
     end
   end
 
-  class BinaryOp < Base
+  class BinaryOp
     attr_reader :lhs, :rhs, :op
 
     def initialize(lhs, op, rhs)

@@ -31,6 +31,12 @@ class Lexer
     when '/'
       advance
       Token.new(:slash)
+    when '('
+      advance
+      Token.new(:l_paren)
+    when ')'
+      advance
+      Token.new(:r_paren)
     else
       raise "Unknown character #{current_char}"
     end

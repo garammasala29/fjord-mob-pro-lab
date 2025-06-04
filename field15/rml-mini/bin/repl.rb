@@ -1,30 +1,5 @@
-require_relative '../lib/parser_step3'
-
-puts 'Ruby Mini Language REPL'
-puts "Type 'exit' to quit"
-
-parser = ParserStep3
-
-loop do
-  print "> "
-  input = gets
-  break if input.nil? || input.strip == 'exit'
-
-  begin
-    result = parser.eval(input)
-    puts "#=> #{result}"
-  rescue => e
-    puts "残念! Errorだよ!"
-    puts e.message
-  end
-end
-
-__END__
-# STEP4からはこちらを使ってね。
-# Evaluatorが評価(eval)するように責務を変更した。
-
 require_relative '../lib/parser_step4'
-
+require_relative '../lib/evaluator'
 puts 'Ruby Mini Language REPL'
 puts "Type 'exit' to quit"
 
