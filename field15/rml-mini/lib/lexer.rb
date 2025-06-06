@@ -94,7 +94,7 @@ class Lexer
     Token.new(:int, @input[start_index...@index].to_i)
   end
 
-  def read_identifier
+  def read_identifier_or_keyword
     start_index = @index
     advance while current_char&.match?(/[\w-]/) # else-ifようにハイフン追加
 
