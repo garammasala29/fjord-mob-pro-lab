@@ -1,3 +1,8 @@
+## 実装方針
+# if文で使う'<', '>',{','}'
+# 比較演算子で使う '=>', '=<', '<', '>', '==', '!='をトークンとして追加
+# 予約後を読み込むメソッド作る(true, false, if, else-if, else)
+
 class Token
   attr_reader :type, :value
 
@@ -19,14 +24,38 @@ class Lexer
 
     case current_char
     when /\d/ then read_number
-    when /[a-zA-Z_]/ then read_identifier
+    when /[a-zA-Z_]/ then read_identifier_or_keyword
     when '+' then advance; Token.new(:plus)
     when '-' then advance; Token.new(:minus)
     when '*' then advance; Token.new(:asterisk)
     when '/' then advance; Token.new(:slash)
     when '(' then advance; Token.new(:l_paren)
     when ')' then advance; Token.new(:r_paren)
-    when '=' then advance; Token.new(:equals)
+    when '{' then advance; Token.new(:l_brace)
+    when '}' then advance; Token.new(:r_brace)
+    when '<' then advance; Token.new(:less)
+    when '>' then advance; Token.new(:greater)
+    when '='
+      if peek_char == '=' # '=='
+        2.times { advance }
+        Token.new(:equal_equal)
+      elsif peek_char == '<' #'<='
+        2.times { advance }
+        Token.new(:equal_less)
+      elsif peek_char == '>' #'<='
+        2.times { advance }
+        Token.new(:equal_greater)
+      else
+        advance
+        Token.new(:equals)
+      end
+    when '!'
+      if peek_char == '='
+        2.times { advance }
+        Token.new(:not_equal)
+      else
+        raise "Unknown character #{current_char}"
+      end
     else
       raise "Unknown character #{current_char}"
     end
@@ -50,6 +79,10 @@ class Lexer
     @input[@index]
   end
 
+  def peek_char
+    @input[@index + 1]
+  end
+
   def advance
     @index += 1
   end
@@ -63,9 +96,17 @@ class Lexer
 
   def read_identifier
     start_index = @index
-    advance while current_char&.match?(/\w/)
+    advance while current_char&.match?(/[\w-]/) # else-ifようにハイフン追加
 
-    Token.new(:identifier, @input[start_index...@index])
+    text = @input[start_index...@index]
+    case text
+    when 'true' then Token.new(:true)
+    when 'false' then Token.new(:false)
+    when 'if' then Token.new(:if)
+    when 'else-if' then Token.new(:else_if)
+    when 'else' then Token.new(:else)
+    else Token.new(:identifier, text)
+    end
   end
 
   def eol?
