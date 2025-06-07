@@ -8,6 +8,13 @@ require_relative 'lexer'
 require_relative 'node'
 
 class ParserStep6
+  # 各括弧タイプに対応する開始・終了トークンのマッピング
+  DELIMITER_TOKENS = {
+    paren: [:l_paren, :r_paren],
+    brace: [:l_brace, :r_brace],
+    angle: [:less, :greater],
+  }.freeze
+
   def self.parse(input)
     new(input).parse
   end
@@ -50,35 +57,19 @@ class ParserStep6
   end
 
   def if_statement # if < condition > { } [else-if < elsif_condition > { elsif_body } else-if <> {} else {}]
-    consume(:if)
-    consume(:less)
-    condition = comparison
-    consume(:greater)
-    consume(:l_brace)
-    then_body = statements
-    consume(:r_brace)
+    condition, then_body = parse_conditional_branch(keyword: :if, require_condition: true)
 
     else_ifs = []
     while @current_token.type == :else_if
-      consume(:else_if)
-      consume(:less)
-      elseif_condition = comparison
-      consume(:greater)
-      consume(:l_brace)
-      elsif_body = statements
-      consume(:r_brace)
+      elseif_condition, elseif_body =
+        parse_conditional_branch(keyword: :else_if, require_condition: true)
 
-      else_ifs << { condition: elseif_condition, body: elsif_body}
+      else_ifs << { condition: elseif_condition, body: elseif_body}
     end
 
     else_body =
       if @current_token.type == :else
-        consume(:else)
-        consume(:l_brace)
-        result = statements
-        consume(:r_brace)
-
-        result
+        parse_conditional_branch(keyword: :else, require_condition: false).last
       end
 
     Node::IfStatement.new(condition, then_body, else_ifs, else_body)
@@ -98,7 +89,7 @@ class ParserStep6
   def comparison
     result = expr
 
-    while %i[equal_equal not_equal less greater equal_less equal_greater].include?(@current_token.type)
+    while comparison_operator?
       break if @current_token.type == :greater && peek_next_token.type == :l_brace
       op = @current_token.type
       consume(op)
@@ -152,12 +143,7 @@ class ParserStep6
       consume(:identifier)
 
       Node::Variable.new(name)
-    when :l_paren
-      consume(:l_paren)
-      result = comparison # かっこの中で比較演算使える
-      consume(:r_paren)
-
-      result
+    when :l_paren then with_delimiters(type: :paren) { comparison } # かっこの中で比較演算使える
     else
       raise "Unexpected token: #{@current_token.value}"
     end
@@ -174,5 +160,29 @@ class ParserStep6
     end
 
     @current_token = @lexer.next_token
+  end
+
+  def comparison_operator?
+    %i(equal_equal not_equal less greater equal_less equal_greater).include?(@current_token.type)
+  end
+
+  def parse_conditional_branch(keyword:, require_condition: )
+    consume(keyword)
+    condition = with_delimiters(type: :angle) { comparison } if require_condition
+    body = with_delimiters(type: :brace) { statements }
+
+    [condition, body]
+  end
+
+  def with_delimiters(type: :paren)
+    left, right = DELIMITER_TOKENS.fetch(type) do
+      raise "Unknown delimiter type: #{type}"
+    end
+
+    consume(left)
+    result = yield
+    consume(right)
+
+    result
   end
 end
