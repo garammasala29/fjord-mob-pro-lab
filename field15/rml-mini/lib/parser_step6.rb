@@ -20,6 +20,10 @@ class ParserStep6
 
   COMPARISON_OPERATORS = %i[equal_equal not_equal less greater equal_less equal_greater].freeze
 
+  # =============================================================================
+  # 公開インターフェース
+  # =============================================================================
+
   def self.parse(input)
     new(input).parse
   end
@@ -41,6 +45,10 @@ class ParserStep6
 
   private
 
+  # =============================================================================
+  # 主要文法解析メソッド（再帰下降パーサーの階層順）
+  # =============================================================================
+
   def statement
     case @current_token.type
     when :if
@@ -59,38 +67,6 @@ class ParserStep6
     else
       comparison
     end
-  end
-
-  def if_statement # if < condition > { } [else-if < elsif_condition > { elsif_body } else-if <> {} else {}]
-    if_branch = parse_conditional_branch(keyword: :if, require_condition: true)
-
-    else_ifs = []
-    while @current_token.type == :else_if
-      else_ifs << parse_conditional_branch(keyword: :else_if, require_condition: true)
-    end
-
-    else_body =
-      if @current_token.type == :else
-        parse_conditional_branch(keyword: :else, require_condition: false).body
-      end
-
-    Node::IfStatement.new(
-      if_branch.condition,
-      if_branch.body,
-      else_ifs,
-      else_body
-    )
-  end
-
-  def statements
-    statements = []
-
-    # '}' or EOL まで statementを読む
-    while @current_token.type != :r_brace && @current_token.type != :eol
-      statements << statement
-    end
-
-    statements.size == 1 ? statements.first : Node::Block.new(statements)
   end
 
   def comparison
@@ -156,10 +132,53 @@ class ParserStep6
     end
   end
 
-  # 次のトークンを消費せずに確認するヘルパーメソッド
-  def peek_next_token
-    @lexer.peek_token
+  # =============================================================================
+  # 特殊構文解析メソッド
+  # =============================================================================
+
+  def if_statement # if < condition > { } [else-if < elsif_condition > { elsif_body } else-if <> {} else {}]
+    if_branch = parse_conditional_branch(keyword: :if, require_condition: true)
+
+    else_ifs = []
+    while @current_token.type == :else_if
+      else_ifs << parse_conditional_branch(keyword: :else_if, require_condition: true)
+    end
+
+    else_body =
+      if @current_token.type == :else
+        parse_conditional_branch(keyword: :else, require_condition: false).body
+      end
+
+    Node::IfStatement.new(
+      if_branch.condition,
+      if_branch.body,
+      else_ifs,
+      else_body
+    )
   end
+
+  def statements
+    statements = []
+
+    # '}' or EOL まで statementを読む
+    while @current_token.type != :r_brace && @current_token.type != :eol
+      statements << statement
+    end
+
+    statements.size == 1 ? statements.first : Node::Block.new(statements)
+  end
+
+  def parse_conditional_branch(keyword:, require_condition: )
+    consume(keyword)
+    condition = with_delimiters(type: :angle) { comparison } if require_condition
+    body = with_delimiters(type: :brace) { statements }
+
+    ConditionalBranch.new(condition, body)
+  end
+
+  # =============================================================================
+  # ヘルパーメソッド（パーサーの基本操作）
+  # =============================================================================
 
   def consume(expected_type)
     if @current_token.type != expected_type
@@ -169,16 +188,25 @@ class ParserStep6
     @current_token = @lexer.next_token
   end
 
+  # 次のトークンを消費せずに確認するヘルパーメソッド
+  def peek_next_token
+    @lexer.peek_token
+  end
+
+  # =============================================================================
+  # ユーティリティメソッド（判定・変換・抽象化）
+  # =============================================================================
+
   def comparison_operator?
     COMPARISON_OPERATORS.include?(@current_token.type)
   end
 
-  def parse_conditional_branch(keyword:, require_condition: )
-    consume(keyword)
-    condition = with_delimiters(type: :angle) { comparison } if require_condition
-    body = with_delimiters(type: :brace) { statements }
+  def if_condition_end_token? = @current_token.type == :greater && peek_next_token.type == :l_brace
 
-    ConditionalBranch.new(condition, body)
+  def boolean_literal
+    val = @current_token.type
+    consume(val)
+    Node::Boolean.new(val == :true)
   end
 
   def with_delimiters(type: :paren)
@@ -192,12 +220,4 @@ class ParserStep6
 
     result
   end
-
-  def boolean_literal
-    val = @current_token.type
-    consume(val)
-    Node::Boolean.new(val == :true)
-  end
-
-  def if_condition_end_token? = @current_token.type == :greater && peek_next_token.type == :l_brace
 end
