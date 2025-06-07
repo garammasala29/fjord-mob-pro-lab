@@ -18,6 +18,8 @@ class ParserStep6
     angle: [:less, :greater],
   }.freeze
 
+  COMPARISON_OPERATORS = %i[equal_equal not_equal less greater equal_less equal_greater].freeze
+
   def self.parse(input)
     new(input).parse
   end
@@ -95,7 +97,8 @@ class ParserStep6
     result = expr
 
     while comparison_operator?
-      break if @current_token.type == :greater && peek_next_token.type == :l_brace
+      break if if_condition_end_token?
+
       op = @current_token.type
       consume(op)
       rhs = expr
@@ -141,8 +144,7 @@ class ParserStep6
       consume(:int)
 
       Node::Integer.new(value)
-    when :true then consume(:true); Node::Boolean.new(true)
-    when :false then consume(:false); Node::Boolean.new(false)
+    when :true, :false then boolean_literal
     when :identifier
       name = @current_token.value
       consume(:identifier)
@@ -168,7 +170,7 @@ class ParserStep6
   end
 
   def comparison_operator?
-    %i(equal_equal not_equal less greater equal_less equal_greater).include?(@current_token.type)
+    COMPARISON_OPERATORS.include?(@current_token.type)
   end
 
   def parse_conditional_branch(keyword:, require_condition: )
@@ -190,4 +192,12 @@ class ParserStep6
 
     result
   end
+
+  def boolean_literal
+    val = @current_token.type
+    consume(val)
+    Node::Boolean.new(val == :true)
+  end
+
+  def if_condition_end_token? = @current_token.type == :greater && peek_next_token.type == :l_brace
 end
