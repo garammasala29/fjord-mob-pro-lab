@@ -151,11 +151,85 @@ integer    = digit { digit } ;
 - **Evaluator**: ASTを評価し、環境を管理する
   - `Evaluator.evaluate(ast)` → 計算結果を返す
 
+### Step6: 条件分岐の導入
+STEP6ではインタプリタに条件分岐機能を導入します。Boolean型、比較演算子、if文を実装することでより高度なプログラミングが可能になります。
+
+#### 実装する機能
+1. **Boolean型** の導入
+  - `true`と`false`のBooleanリテラルをサポート
+  - Boolean値の変数への代入と参照
+1. **比較演算子**の実装
+  - `==`(等価比較)
+  - `!=`(不等価比較)
+  - `<`(未満)
+  - `>`(より大きい)
+  - `=<` (以下)←これは独自実装です。あー、なんか気持ち悪いね
+  - `=>` (以上)←これは独自実装です。あー、なんか気持ち悪いね
+1. **if文**の実装
+  - 基本的な構文: `if < condition > { statements }`
+  - if-else文: `if < condition > { then_body } else { else_body }`
+  - if-else-if-else文: 複数の条件分岐をサポート
+    - `if < condition > { then_body } (else-if { elseif_body })* else { else_body }`
+  - ブロック内で複数文の実行
+
+#### 文法規則
+基本的な文法規則は以下のようになります：
+
+```txt
+statement     = assignment | if_statement | expression ;
+assignment    = identifier "=" expression ;
+if_statement  = "if" "<" expression ">" block ("else-if" "<" expression ">" block)* ("else" block)? ;
+block         = "{" statement* "}" ;
+expression    = comparison ;
+comparison    = addition ( ("==" | "!=" | "<" | ">" | "=<" | "=>") addition )? ;
+addition      = multiplication ( ("+" | "-") multiplication )* ;
+multiplication = factor ( ("*" | "/") factor )* ;
+factor        = integer | boolean | identifier | "(" expression ")" ;
+boolean       = "true" | "false" ;
+identifier    = letter ( letter | digit )* ;
+integer       = digit+ ;
+```
+
+#### 使用例
+
+```rb
+# Boolean値
+flag = true
+result = false
+
+# 比較演算
+x = 10
+y = 5
+is_greater = x > y  # => true
+is_equal = x == y * 2  # => true
+
+# if文
+if < score => 90 > {
+  grade = 4
+} else-if < score => 80 > {
+  grade = 3
+} else-if < score => 70 > {
+  grade = 2
+} else {
+  grade = 1
+}
+
+# 複雑な条件
+if < (a + b) == (c * d) > {
+  result = 1
+} else {
+  result = 0
+}
+```
+
+#### 演算子の優先順位
+
+1. 括弧 `( )`
+2. 乗除算 `*, /`
+3. 加減算 `+, -`
+4. 比較演算子 `==, !=, <, >, =<, =>`
+
 ### 今後（予定）
-- Step6: 条件分岐の導入
-  - 比較演算子の実装(`==`, `!=`, `<`, `>`, `<=`, `>=`など)
-  - 論理演算子の実装
-  - if/else 文の実装
 - STEP7: ループ処理の導入
   - whileループの実装
 - STEP8: 文字列操作
