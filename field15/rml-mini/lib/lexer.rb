@@ -71,14 +71,6 @@ class Lexer
   def eol?
     @index >= @input.size
   end
-
-  def peek_token
-    stored_index = @index
-    token = next_token
-    @index = stored_index
-
-    token
-  end
 end
 
 __END__
