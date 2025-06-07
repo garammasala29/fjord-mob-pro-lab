@@ -71,23 +71,17 @@ class Evaluator
 
   def eval_if_statement(node)
     cond_result = evaluate(node.condition)
-
-    unless cond_result.is_a?(TrueClass) || cond_result.is_a?(FalseClass)
-      raise "The condition of an if statement must be a boolean: #{cond_result}"
-    end
+    ensure_boolean!(cond_result, "The condition of an if")
 
     if cond_result # 条件式がtrueの場合
       evaluate(node.then_body)
     else # 条件式がfalseの場合
       node.else_ifs.each do |else_if|
-        elseif_cond = evaluate(else_if[:condition])
-
-        unless elseif_cond.is_a?(TrueClass) || elseif_cond.is_a?(FalseClass)
-          raise "The condition of an if statement must be a boolean: #{cond_result}"
-        end
+        elseif_cond = evaluate(else_if.condition)
+        ensure_boolean!(elseif_cond, "The condition of an else-if")
 
         if elseif_cond # trueの処理
-          return evaluate(else_if[:body])
+          return evaluate(else_if.body)
         end
       end
 
@@ -97,6 +91,16 @@ class Evaluator
   end
 
   def eval_block(node)
+    return nil if node.statements.empty?
+
     node.statements.map { |statement| evaluate(statement) }.last
   end
+
+  def ensure_boolean!(value, context = "The condition of an if")
+    unless boolean?(value)
+      raise "#{context} statement must be a boolean: #{value}"
+    end
+  end
+
+  def boolean?(value) = value.is_a?(TrueClass) || value.is_a?(FalseClass)
 end

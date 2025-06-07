@@ -5,6 +5,10 @@ require_relative "../lib/node"
 RSpec.describe Evaluator do
   subject { described_class.new }
 
+  def mock_conditional_branch(condition:, body:)
+    double("conditional_branch", condition: condition, body: body)
+  end
+
   describe "#evaluate" do
     # Step4からの継承テスト
     it "evaluates integer node" do
@@ -236,7 +240,10 @@ RSpec.describe Evaluator do
         elsif_body = Node::Assignment.new("result", Node::Integer.new(2))
         else_body = Node::Assignment.new("result", Node::Integer.new(3))
 
-        else_ifs = [{ condition: Node::Boolean.new(true), body: elsif_body }]
+        else_ifs = [
+          mock_conditional_branch(condition: Node::Boolean.new(true), body: elsif_body)
+        ]
+
         if_node = Node::IfStatement.new(Node::Boolean.new(false), then_body, else_ifs, else_body)
 
         expect(subject.evaluate(if_node)).to eq(2)
@@ -260,6 +267,26 @@ RSpec.describe Evaluator do
         expect(subject.evaluate(Node::Variable.new("y"))).to eq(20)
       end
 
+      it "handles complex else-if chain" do
+        then_body = Node::Assignment.new("grade", Node::Integer.new(1))
+        else_body = Node::Assignment.new("grade", Node::Integer.new(4))
+
+        else_ifs = [
+          mock_conditional_branch(condition: Node::Boolean.new(false), body: Node::Assignment.new("grade", Node::Integer.new(2))),
+          mock_conditional_branch(condition: Node::Boolean.new(true), body: Node::Assignment.new("grade", Node::Integer.new(3)))
+        ]
+
+        if_node = Node::IfStatement.new(
+          Node::Boolean.new(false),
+          then_body,
+          else_ifs,
+          else_body
+        )
+
+        expect(subject.evaluate(if_node)).to eq(3)
+        expect(subject.evaluate(Node::Variable.new("grade"))).to eq(3)
+      end
+
       it "raises error when condition is not boolean" do
         then_body = Node::Assignment.new("result", Node::Integer.new(42))
         if_node = Node::IfStatement.new(Node::Integer.new(42), then_body)
@@ -271,10 +298,12 @@ RSpec.describe Evaluator do
         then_body = Node::Assignment.new("result", Node::Integer.new(1))
         elsif_body = Node::Assignment.new("result", Node::Integer.new(2))
 
-        else_ifs = [{ condition: Node::Integer.new(42), body: elsif_body }]
+        else_ifs = [
+          mock_conditional_branch(condition: Node::Integer.new(42), body: elsif_body)
+        ]
         if_node = Node::IfStatement.new(Node::Boolean.new(false), then_body, else_ifs)
 
-        expect { subject.evaluate(if_node) }.to raise_error(/The condition of an if statement must be a boolean/)
+        expect { subject.evaluate(if_node) }.to raise_error(/The condition of an else-if statement must be a boolean/)
       end
     end
 

@@ -257,7 +257,7 @@ RSpec.describe "Integration Step6" do
     it "raises error when else-if condition is not boolean" do
       expect {
         evaluate("if < false > { x = 1 } else-if < 42 > { x = 2 }")
-      }.to raise_error(/The condition of an if statement must be a boolean/)
+      }.to raise_error(/The condition of an else-if statement must be a boolean/)
     end
 
     it "raises syntax error for malformed if statement" do
