@@ -14,7 +14,12 @@ class Evaluator
       @environment.lookup(node.name)
     when Node::Assignment
       value = evaluate(node.value)
-      @environment.define(node.name, value)
+
+      if @environment.var_exists?(node.name)
+        @environment.assign(node.name, value)
+      else
+        @environment.define(node.name, value)
+      end
 
       value # 割り当てられた値を戻り値として返す
     when Node::BinaryOp

@@ -4,10 +4,12 @@ class Environment
     @parent = parent
   end
 
+  # 変数の定義
   def define(name, value)
     @values[name] = value
   end
 
+  # 変数への再代入
   def assign(name, value)
     if @values.key?(name)
       @values[name] = value
@@ -18,6 +20,7 @@ class Environment
     end
   end
 
+  # 参照
   def lookup(name)
     if @values.key?(name)
       @values[name]
@@ -27,4 +30,6 @@ class Environment
       raise "未定義の変数です: #{name}"
     end
   end
+
+  def var_exists?(name) = @values.key?(name) || (@parent && @parent.var_exists?(name))
 end
