@@ -13,8 +13,7 @@ class ParserStep5
 
   def parse
     # :TODO: 式から始めていたのを変える
-    result = # ???
-
+    result = statement
     # エラー処理
     if @current_token.type != :eol
       raise "Unexpected token: #{@current_token.value}"
@@ -26,7 +25,15 @@ class ParserStep5
   private
 
   def statement
-    # :TODO:
+    if @current_token.type == :identifier && peek_next_token.type == :equals
+      var_name = @current_token.value
+      consume(:identifier)
+      consume(:equals)
+      value = expr
+      Node::Assignment.new(var_name, value)
+    else
+      expr
+    end
   end
 
   def expr
@@ -58,7 +65,20 @@ class ParserStep5
   end
 
   def factor
-    # :TODO:
+    node = nil
+    if @current_token.type == :int
+      node = Node::Integer.new(@current_token.value)
+      consume(:int)
+    elsif @current_token.type == :l_paren
+      consume(:l_paren)
+      node = expr
+      consume(:r_paren)
+    elsif @current_token.type == :identifier
+      value = @current_token.value
+      consume(:identifier)
+      node = Node::Variable.new(value)
+    end
+    node
   end
 
   # 次のトークンを消費せずに確認するヘルパーメソッド

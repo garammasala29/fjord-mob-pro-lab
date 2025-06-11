@@ -5,14 +5,26 @@ class Environment
   end
 
   def define(name, value)
-    # :TODO:
+    @values[name] = value
   end
 
   def assign(name, value)
-    # :TODO:
+    if @values.key?(name)
+      @values[name] = value
+    elsif @parent
+      @parent.assign(name, value)
+    else
+      raise "未定義の変数です: #{name}"
+    end
   end
 
   def lookup(name)
-    # :TODO:
+    if @values.key?(name)
+      @values[name]
+    elsif @parent
+      @parent.lookup(name, value)
+    else
+      raise "未定義の変数です: #{name}"
+    end
   end
 end

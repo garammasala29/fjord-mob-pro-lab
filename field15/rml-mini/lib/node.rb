@@ -16,4 +16,21 @@ module Node
       @rhs = rhs
     end
   end
+
+  class Assignment
+    attr_reader :name, :value
+
+    def initialize(name, value)
+      @name = name
+      @value = value
+    end
+  end
+
+  class Variable
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+  end
 end

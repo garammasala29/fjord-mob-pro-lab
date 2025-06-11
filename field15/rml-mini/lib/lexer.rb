@@ -19,6 +19,10 @@ class Lexer
 
     case current_char
     when /\d/ then read_number
+    when /[a-zA-Z_]/ then read_identifier
+    when "="
+      advance
+      Token.new(:equals)
     when '+'
       advance
       Token.new(:plus)
@@ -42,6 +46,14 @@ class Lexer
     end
   end
 
+  def peek_token
+    index = @index
+    token = next_token
+    @index = index
+
+    token
+  end
+
   private
 
   def skip_whitespace
@@ -61,6 +73,13 @@ class Lexer
     advance while current_char&.match?(/\d/)
 
     Token.new(:int, @input[start_index...@index].to_i)
+  end
+
+  def read_identifier
+    start_index = @index
+    advance while current_char&.match?(/\w/)
+
+    Token.new(:identifier, @input[start_index...@index])
   end
 
   def eol?
