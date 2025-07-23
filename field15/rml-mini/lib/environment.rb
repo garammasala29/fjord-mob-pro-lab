@@ -32,3 +32,4 @@ class Environment
     @values.key?(name) || (@parent && @parent.var_exists?(name))
   end
 end
+

@@ -7,6 +7,10 @@ class Token
   end
 end
 
+## やりたいこと
+# if 文の条件式で使う '<', '>', '{', '}'
+# 比較演算子で使う '<', '>', '=<', '=>', '==', '!='
+# をトークンとして追加したい
 class Lexer
   def initialize(input)
     @input = input
@@ -19,10 +23,7 @@ class Lexer
 
     case current_char
     when /\d/ then read_number
-    when /[a-zA-Z_]/ then read_identifier
-    when "="
-      advance
-      Token.new(:equals)
+    when /[a-zA-Z_]/ then read_identifier_or_keyword
     when '+'
       advance
       Token.new(:plus)
@@ -41,6 +42,24 @@ class Lexer
     when ')'
       advance
       Token.new(:r_paren)
+    when '{'
+      advance
+      Token.new(:l_brace)
+    when '}'
+      advance
+      Token.new(:r_brace)
+    when '<'
+      advance
+      Token.new(:less)
+    when '>'
+      advance
+      Token.new(:grater)
+    when "="
+      advance
+      if #次のトークンを見て(消費はしない)　= がきたら
+
+      end
+      Token.new(:equals)
     else
       raise "Unknown character #{current_char}"
     end
@@ -75,11 +94,25 @@ class Lexer
     Token.new(:int, @input[start_index...@index].to_i)
   end
 
-  def read_identifier
+  def read_identifier_or_keyword
     start_index = @index
     advance while current_char&.match?(/\w/)
 
-    Token.new(:identifier, @input[start_index...@index])
+    text = @input[start_index...@index]
+    case text
+    when 'true'
+      Token.new(:true)
+    when 'false'
+      Token.new(:false)
+    when 'if'
+      Token.new(:if)
+    when 'else-if'
+      Token.new(:else_if)
+    when 'else'
+      Token.new(:else)
+    else
+      Token.new(:identifier, text)
+    end
   end
 
   def eol?
