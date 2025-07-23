@@ -48,7 +48,7 @@ class Lexer
       Token.new(:less)
     when '>'
       advance
-      Token.new(:grater)
+      Token.new(:greater)
     when "="
       if peek_char == '='
         advance
@@ -61,10 +61,17 @@ class Lexer
       elsif peek_char == '>'
         advance
         advance
-        Token.new(:equal_grater)
+        Token.new(:equal_greater)
       end
       advance
       Token.new(:equals)
+    when '!'
+      if peek_char == '='
+        2.times { advance }
+        Token.new(:not_equal)
+      else
+        raise "Unknown character #{current_char}"
+      end
     else
       raise "Unknown character #{current_char}"
     end
