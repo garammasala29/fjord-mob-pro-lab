@@ -27,4 +27,8 @@ class Environment
       raise "未定義の変数です: #{name}"
     end
   end
+
+  def var_exists?(name)
+    @values.key?(name) || (@parent && @parent.var_exists?(name))
+  end
 end

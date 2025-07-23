@@ -1,9 +1,9 @@
-require_relative '../lib/parser_step4'
+require_relative '../lib/parser_step5'
 require_relative '../lib/evaluator'
 puts 'Ruby Mini Language REPL'
 puts "Type 'exit' to quit"
 
-parser = ParserStep4
+parser = ParserStep5
 evaluator = Evaluator.new
 
 loop do

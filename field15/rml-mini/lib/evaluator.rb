@@ -1,11 +1,30 @@
 require_relative 'environment'
 
 class Evaluator
+  def initialize
+    @environment = Environment.new
+  end
+
   # node を受け取って再帰的に評価する
   def evaluate(node)
     case node
     when Node::Integer
       node.value
+    when Node::Variable
+      # environmentから識別子の名前で値を探して返す
+      @environment.lookup(node.name)
+    when Node::Assignment
+      # environmentに変数と値のペアを登録したい
+      # 環境のマッピングの中にすでに変数名が存在していれば assign を読んで代入
+      # 初回だったらdefine
+      value = evaluate(node.value)
+      if @environment.var_exists?(node.name)
+        @environment.assign(node.name, value)
+      else
+        @environment.define(node.name, value)
+      end
+
+      value
     when Node::BinaryOp
       lhs = evaluate(node.lhs)
       rhs = evaluate(node.rhs)
@@ -29,3 +48,8 @@ class Evaluator
     end
   end
 end
+
+__END__
+x = 42
+x = 1 + 3
+
