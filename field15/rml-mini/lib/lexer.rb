@@ -6,11 +6,6 @@ class Token
     @value = value
   end
 end
-
-## やりたいこと
-# if 文の条件式で使う '<', '>', '{', '}'
-# 比較演算子で使う '<', '>', '=<', '=>', '==', '!='
-# をトークンとして追加したい
 class Lexer
   def initialize(input)
     @input = input
@@ -53,13 +48,30 @@ class Lexer
       Token.new(:less)
     when '>'
       advance
-      Token.new(:grater)
+      Token.new(:greater)
     when "="
-      advance
-      if #次のトークンを見て(消費はしない)　= がきたら
-
+      if peek_char == '='
+        advance
+        advance
+        Token.new(:equal_equal)
+      elsif peek_char == '<'
+        advance
+        advance
+        Token.new(:equal_less)
+      elsif peek_char == '>'
+        advance
+        advance
+        Token.new(:equal_greater)
       end
+      advance
       Token.new(:equals)
+    when '!'
+      if peek_char == '='
+        2.times { advance }
+        Token.new(:not_equal)
+      else
+        raise "Unknown character #{current_char}"
+      end
     else
       raise "Unknown character #{current_char}"
     end
@@ -83,6 +95,10 @@ class Lexer
     @input[@index]
   end
 
+  def peek_char
+    @input[@index + 1]
+  end
+
   def advance
     @index += 1
   end
@@ -96,7 +112,7 @@ class Lexer
 
   def read_identifier_or_keyword
     start_index = @index
-    advance while current_char&.match?(/\w/)
+    advance while current_char&.match?(/[\w-]/)
 
     text = @input[start_index...@index]
     case text
