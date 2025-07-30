@@ -62,9 +62,10 @@ class Lexer
         advance
         advance
         Token.new(:equal_greater)
+      else
+        advance
+        Token.new(:equals)
       end
-      advance
-      Token.new(:equals)
     when '!'
       if peek_char == '='
         2.times { advance }

@@ -12,7 +12,6 @@ class ParserStep6
   end
 
   def parse
-    # :TODO: 式から始めていたのを変える
     result = statement
     # エラー処理
     if @current_token.type != :eol
@@ -74,11 +73,34 @@ class ParserStep6
   end
 
   def comparison
-    # todo
+    result = expr
+
+    while %i[equal_equal not_equal less greater equal_less equal_greater].include?(@current_token.type)
+      # op を取得
+      op = @current_token.type
+      break if op == :greater && peek_next_token.type == :l_brace
+
+      consume(op)
+      # 右辺を評価してrhsに入れる
+      rhs = expr
+      # Nodeに詰める
+      result = Node::ComparisonOp.new(result, op, rhs)
+    end
+
+    result
   end
 
+
+
   def statements
-    # todo
+    statements = []
+
+    until @current_token.type == :r_brace || @current_token.type == :eol
+    # until @current_token.type == :r_brace && peek_next_token.type == :eol
+      statements << statement
+    end
+
+    statements.size == 1 ? statements.first : Node::Block.new(statements)
   end
 
   def expr
@@ -116,12 +138,18 @@ class ParserStep6
       consume(:int)
     elsif @current_token.type == :l_paren
       consume(:l_paren)
-      node = expr
+      node = comparison
       consume(:r_paren)
     elsif @current_token.type == :identifier
       value = @current_token.value
       consume(:identifier)
       node = Node::Variable.new(value)
+    elsif @current_token.type == :true
+      consume(:true)
+      node = Node::Boolean.new(true)
+    elsif @current_token.type == :false
+      consume(:false)
+      node = Node::Boolean.new(false)
     end
     node
   end
