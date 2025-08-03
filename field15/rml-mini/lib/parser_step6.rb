@@ -13,6 +13,7 @@ class ParserStep6
 
   def parse
     result = statement
+
     # エラー処理
     if @current_token.type != :eol
       raise "Unexpected token: #{@current_token.value}"
@@ -27,14 +28,13 @@ class ParserStep6
     if @current_token.type == :if
       if_statement
     elsif @current_token.type == :identifier && peek_next_token.type == :equals
-
       var_name = @current_token.value
       consume(:identifier)
       consume(:equals)
-      value = expr
+      value = comparison
       Node::Assignment.new(var_name, value)
     else
-      expr
+      comparison
     end
   end
 
@@ -150,6 +150,8 @@ class ParserStep6
     elsif @current_token.type == :false
       consume(:false)
       node = Node::Boolean.new(false)
+    else
+      raise "Unexpected token: #{@current_token.value}"
     end
     node
   end
