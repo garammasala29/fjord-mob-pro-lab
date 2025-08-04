@@ -1,8 +1,3 @@
-## 実装方針
-# if文で使う'<', '>',{','}'
-# 比較演算子で使う '=>', '=<', '<', '>', '==', '!='をトークンとして追加
-# 予約後を読み込むメソッド作る(true, false, if, else-if, else)
-
 class Token
   attr_reader :type, :value
 
@@ -113,29 +108,3 @@ class Lexer
     @index >= @input.size
   end
 end
-
-__END__
-'+' → type :plus, value=nil
-'-' → type :minus, value = nil
-
-
-1 → :int, value = 1
-文の終わり
-   :eol, value = nil
-
-1      + 2
-
-
-0123456789
-123 + 345 + 3
-
-Token.new(:int,input[6..8])
-
-0123456789
-1 + 2 + 3
-
-6を読む→+とわかる→インデックスを1増やす
-index = 7
-input.size = 8
-
-index + 1 == input.size
