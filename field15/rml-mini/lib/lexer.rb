@@ -127,6 +127,8 @@ class Lexer
       Token.new(:else_if)
     when 'else'
       Token.new(:else)
+    when 'while'
+      Token.new(:while)
     else
       Token.new(:identifier, text)
     end

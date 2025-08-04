@@ -63,6 +63,15 @@ module Node
     end
   end
 
+  class WhileStatement
+    attr_reader :condition, :body
+
+    def initialize(condition, body)
+      @condition = condition
+      @body = body
+    end
+  end
+
   class Block
     attr_reader :statements
 

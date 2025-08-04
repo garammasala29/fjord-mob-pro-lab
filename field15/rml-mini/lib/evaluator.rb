@@ -1,6 +1,9 @@
 require_relative 'environment'
 
 class Evaluator
+  # 無限ループ対策のための実行ステップ制限
+  MAX_LOOP_ITERATIONS = 10000
+
   def initialize
     @environment = Environment.new
   end
@@ -35,6 +38,8 @@ class Evaluator
       eval_comparison_op(lhs, node.op, rhs)
     when Node::IfStatement
       eval_if_statement(node)
+    when Node::WhileStatement
+      eval_while_statement(node)
     when Node::Block
       eval_block(node)
     else
@@ -92,6 +97,25 @@ class Evaluator
         evaluate(node.else_body)
       end
     end
+  end
+
+  def eval_while_statement(node)
+    result = nil
+    count = 0
+    loop do
+      if count > MAX_LOOP_ITERATIONS
+        raise "Loop exceeded maximum iterations (#{MAX_LOOP_ITERATIONS}). Possible infinite loop detected."
+      end
+
+      cond_result = evaluate(node.condition)
+      ensure_boolean!(cond_result, "The condition of a while")
+      break unless cond_result
+
+      result = evaluate(node.body)
+      count += 1
+    end
+
+    result
   end
 
   def eval_block(node)

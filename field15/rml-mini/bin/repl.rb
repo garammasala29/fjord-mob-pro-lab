@@ -1,4 +1,4 @@
-require_relative '../lib/parser_step6'
+require_relative '../lib/parser_step7'
 require_relative '../lib/evaluator'
 puts 'Ruby Mini Language REPL'
 puts "Type 'exit' to quit"
@@ -7,7 +7,7 @@ class REPL
   INDENT_SIZE = 2
 
   def initialize
-    @parser = ParserStep6
+    @parser = ParserStep7
     @evaluator = Evaluator.new
     @input_buffer = []
     @bracket_stack = []
