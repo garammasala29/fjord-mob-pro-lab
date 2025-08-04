@@ -1,6 +1,3 @@
-## 実装方針
-# 比較の真理値、二項演算、if文、復文を扱えるnodeを追加
-
 module Node
   class Integer
     attr_reader :value

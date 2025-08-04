@@ -41,6 +41,8 @@ class Evaluator
     end
   end
 
+  def variables = @environment.all_variables
+
   private
 
   # 2項演算の評価
@@ -103,4 +105,6 @@ class Evaluator
   end
 
   def boolean?(value) = value.is_a?(TrueClass) || value.is_a?(FalseClass)
+
+  def no_variables? = @environment.empty?
 end
