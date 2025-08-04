@@ -229,9 +229,98 @@ if < (a + b) == (c * d) > {
 3. 加減算 `+, -`
 4. 比較演算子 `==, !=, <, >, =<, =>`
 
+### Step7: ループ処理の導入
+STEP7ではインタプリタにループ処理機構を導入します。While文を実装することで、条件に基づいた反復処理が可能になります。
+
+#### 実装する機能
+1. while文の実装
+  - 基本的な構文 `while < condition > { statements }`
+  - 条件式が真の間、ブロック内の文を繰り返し実行
+  - 条件式はBoolean型である必要がある(暗黙的な方変換は行われない)
+  - ループないでの変数の更新ができる
+
+#### 文法規則
+基本的な文法規則は以下のようになります。
+
+```txt
+statement     = assignment | if_statement | while_statement | expression ;
+assignment    = identifier "=" expression ;
+if_statement  = "if" "<" expression ">" block ("else-if" "<" expression ">" block)* ("else" block)? ;
+while_statement = "while" "<" expression ">" block ;
+block         = "{" statement* "}" ;
+expression    = comparison ;
+comparison    = addition ( ("==" | "!=" | "<" | ">" | "=<" | "=>") addition )? ;
+addition      = multiplication ( ("+" | "-") multiplication )* ;
+multiplication = factor ( ("*" | "/") factor )* ;
+factor        = integer | boolean | identifier | "(" expression ")" ;
+boolean       = "true" | "false" ;
+identifier    = letter ( letter | digit )* ;
+integer       = digit+ ;
+```
+
+#### 使用例
+```rb
+# 基本的なカウントループ
+counter = 0
+while < counter < 5 > {
+  counter = counter + 1
+}
+# counter は 5 になる
+
+# 条件に基づくループ
+x = 10
+sum = 0
+while < x > 0 > {
+  sum = sum + x
+  x = x - 1
+}
+# sum は 55 (10+9+8+7+6+5+4+3+2+1)
+
+# 複雑な条件
+result = 1
+i = 1
+while < i =< 5 > {
+  result = result * i
+  i = i + 1
+}
+# result は 120 (5の階乗)
+
+# if文との組み合わせ
+n = 20
+count = 0
+while < n > 1 > {
+  if < (n / 2) * 2 == n > {
+    n = n / 2
+  } else {
+    n = n * 3 + 1
+  }
+  count = count + 1
+}
+# コラッツ予想のステップ数をカウント
+```
+
+#### 実装のポイント
+1. 新しいASTノード: `Node::WhileStatement`を追加
+  - `condition`: 条件式のAST
+  - `body`: ループ本体のAST(Block or 単一のstatement)
+1. Lexerの拡張: `while`キーワードを認識
+  - `read_identifier_or_keyword`メソッドを追加
+1. Parserの拡張: `while_statement`メソッドを追加
+  - if文と同様の構造で実装
+  - `while < condition > { body }`の構文解析
+1. Evaluatorの拡張: while文の評価ロジックを追加
+  - 条件式が`true`の間、bodyを繰り返し実行
+  - 条件式は必ずBoolean型である必要がある
+  - 各ループで変数の状態が更新される
+
+#### 演算子の優先順位（変更なし）
+
+1. 括弧 `( )`
+2. 乗除算 `*, /`
+3. 加減算 `+, -`
+4. 比較演算子 `==, !=, <, >, =<, =>`
+
 ### 今後（予定）
-- STEP7: ループ処理の導入
-  - whileループの実装
 - STEP8: 文字列操作
   - 文字列型の追加
   - 文字列の連結機能の実装
