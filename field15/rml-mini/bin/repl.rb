@@ -1,11 +1,11 @@
-require_relative '../lib/parser_step7'
+require_relative '../lib/parser_step8'
 require_relative '../lib/evaluator'
 
 class REPL
   INDENT_SIZE = 2
 
   def initialize
-    @parser = ParserStep7
+    @parser = ParserStep8
     @evaluator = Evaluator.new
     @input_buffer = []
     @bracket_stack = []
