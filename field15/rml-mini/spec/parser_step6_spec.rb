@@ -285,11 +285,11 @@ RSpec.describe ParserStep6 do
 
         expect(ast.else_ifs).to have_attributes(size: 1)
         else_if = ast.else_ifs.first
-        expect(else_if[:condition]).to be_a(Node::ComparisonOp)
-        expect(else_if[:condition].op).to eq(:equal_greater)
-        expect(else_if[:body]).to be_a(Node::Assignment)
-        expect(else_if[:body].name).to eq("grade")
-        expect(else_if[:body].value.value).to eq(3)
+        expect(else_if.condition).to be_a(Node::ComparisonOp)
+        expect(else_if.condition.op).to eq(:equal_greater)
+        expect(else_if.body).to be_a(Node::Assignment)
+        expect(else_if.body.name).to eq("grade")
+        expect(else_if.body.value.value).to eq(3)
 
         expect(ast.else_body).to be_a(Node::Assignment)
         expect(ast.else_body.name).to eq("grade")
@@ -303,12 +303,12 @@ RSpec.describe ParserStep6 do
         expect(ast.else_ifs).to have_attributes(size: 2)
 
         first_elsif = ast.else_ifs[0]
-        expect(first_elsif[:condition]).to be_a(Node::Variable)
-        expect(first_elsif[:condition].name).to eq("b")
+        expect(first_elsif.condition).to be_a(Node::Variable)
+        expect(first_elsif.condition.name).to eq("b")
 
         second_elsif = ast.else_ifs[1]
-        expect(second_elsif[:condition]).to be_a(Node::Variable)
-        expect(second_elsif[:condition].name).to eq("c")
+        expect(second_elsif.condition).to be_a(Node::Variable)
+        expect(second_elsif.condition.name).to eq("c")
       end
 
       it "parses if with multiple statements in then block" do

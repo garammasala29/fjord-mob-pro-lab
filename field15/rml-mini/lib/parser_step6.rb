@@ -2,6 +2,8 @@ require_relative 'lexer'
 require_relative 'node'
 
 class ParserStep6
+  ConditionalBranch = Data.define(:condition, :body)
+
   # 各括弧のタイプに対応する開始・終了トークンのマッピング
   DELIMITER_TOKENS = {
     paren: [:l_paren, :r_paren], # ()
@@ -46,20 +48,19 @@ class ParserStep6
   end
 
   def if_statement
-    condition, then_body = parse_conditional_branch(:if)
+    if_branch = parse_conditional_branch(:if)
 
     else_ifs = []
-    while @current_token.type == :else_if
-      else_if_condition, else_if_body = parse_conditional_branch(:else_if)
+    else_ifs << parse_conditional_branch(:else_if) while @current_token.type == :else_if
 
-      else_ifs << { condition: else_if_condition, body: else_if_body }
-    end
+    else_body = parse_conditional_branch(:else).body if @current_token.type == :else
 
-    else_body = if @current_token.type == :else
-                  parse_conditional_branch(:else).last
-                end
-
-    Node::IfStatement.new(condition, then_body, else_ifs, else_body)
+    Node::IfStatement.new(
+      if_branch.condition,
+      if_branch.body,
+      else_ifs,
+      else_body
+    )
   end
 
   def comparison
@@ -160,7 +161,7 @@ class ParserStep6
     condition = with_delimiters(type: :angle) { comparison } if %i[if else_if].include?(keyword)
     body = with_delimiters(type: :brace) { statements }
 
-    [condition, body]
+    ConditionalBranch.new(condition, body)
   end
 
   def with_delimiters(type: :paren)

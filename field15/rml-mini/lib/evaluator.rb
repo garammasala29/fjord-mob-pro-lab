@@ -77,12 +77,12 @@ class Evaluator
       evaluate(node.then_body)
     else
       node.else_ifs.each do |else_if|
-        else_if_cond_result =  evaluate(else_if[:condition])
+        else_if_cond_result =  evaluate(else_if.condition)
 
         ensure_boolean!(else_if_cond_result, "The condition of an else-if")
 
         if else_if_cond_result
-          return evaluate(else_if[:body])
+          return evaluate(else_if.body)
         end
       end
 
@@ -93,9 +93,9 @@ class Evaluator
   end
 
   def eval_block(node)
-    node.statements.map { |statement|
-      evaluate(statement)
-    }.last
+    return nil if node.statements.empty?
+
+    node.statements.map { |statement| evaluate(statement) }.last
   end
 
   def ensure_boolean!(cond_result, context = "The condition of an if")
