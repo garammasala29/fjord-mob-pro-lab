@@ -137,16 +137,16 @@ class ParserStep6
   # =============================================================================
 
   def if_statement # if < condition > { } [else-if < elsif_condition > { elsif_body } else-if <> {} else {}]
-    if_branch = parse_conditional_branch(keyword: :if, require_condition: true)
+    if_branch = parse_conditional_branch(:if)
 
     else_ifs = []
     while @current_token.type == :else_if
-      else_ifs << parse_conditional_branch(keyword: :else_if, require_condition: true)
+      else_ifs << parse_conditional_branch(:else_if)
     end
 
     else_body =
       if @current_token.type == :else
-        parse_conditional_branch(keyword: :else, require_condition: false).body
+        parse_conditional_branch(:else).body
       end
 
     Node::IfStatement.new(
@@ -168,9 +168,9 @@ class ParserStep6
     statements.size == 1 ? statements.first : Node::Block.new(statements)
   end
 
-  def parse_conditional_branch(keyword:, require_condition: )
+  def parse_conditional_branch(keyword)
     consume(keyword)
-    condition = with_delimiters(type: :angle) { comparison } if require_condition
+    condition = with_delimiters(type: :angle) { comparison } if %i[if else_if].include?(keyword)
     body = with_delimiters(type: :brace) { statements }
 
     ConditionalBranch.new(condition, body)
