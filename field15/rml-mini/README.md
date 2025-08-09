@@ -336,16 +336,18 @@ STEP8ではインタプリタに文字列型と文字列操作機能を導入し
   - 例: `"Count: " + 42` → `"Count: 42"`
 3. 出力機能の実装
   - `hyouji`文による値の出力
-  - 基本的な構文: `hyouji < expression >`
+  - 基本的な構文: `hyouji(expression)`
   - hyouji は常に`nil`を返す
 
 #### 文法規則
+基本的な文法規則は以下のようになります。
+
 ```txt
-txtstatement     = assignment | if_statement | while_statement | hyouji_statement | expression ;
+statement     = assignment | if_statement | while_statement | hyouji_statement | expression ;
 assignment    = identifier "=" expression ;
 if_statement  = "if" "<" expression ">" block ("else-if" "<" expression ">" block)* ("else" block)? ;
 while_statement = "while" "<" expression ">" block ;
-hyouji_statement = "hyouji" "<" expression ">" ;
+hyouji_statement = "hyouji" "(" expression ")" ;
 block         = "{" statement* "}" ;
 expression    = comparison ;
 comparison    = concatenation ( ("==" | "!=" | "<" | ">" | "=<" | "=>") concatenation )? ;
@@ -368,12 +370,12 @@ name = 'Alice'
 # 文字列連結
 greeting = "Hello, " + name
 full_message = greeting + "!"
-hyouji < full_message >  # "Hello, Alice!"
+hyouji(full_message)  # "Hello, Alice!"
 
 # 数値との連結
 age = 25
 info = name + " is " + age + " years old"
-hyouji < info >  # "Alice is 25 years old"
+hyouji(info)  # "Alice is 25 years old"
 
 # エスケープシーケンス
 quote = "She said \"Hello\" to me"
@@ -382,7 +384,7 @@ newline_text = "First line\nSecond line"
 # 複雑な例
 counter = 0
 while < counter < 3 > {
-  hyouji < "Count: " + counter >
+  hyouji("Count: " + counter)
   counter = counter + 1
 }
 # 出力:
@@ -399,7 +401,7 @@ if < score => 90 > {
 } else {
   grade = "C"
 }
-hyouji < "Your grade is: " + grade >
+hyouji("Your grade is: " + grade)
 ```
 
 #### 実装のポイント
