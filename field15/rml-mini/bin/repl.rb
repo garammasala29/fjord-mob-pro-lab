@@ -1,11 +1,11 @@
-require_relative '../lib/parser_step6'
+require_relative '../lib/parser_step7'
 require_relative '../lib/evaluator'
 
 class REPL
   INDENT_SIZE = 2
 
   def initialize
-    @parser = ParserStep6
+    @parser = ParserStep7
     @evaluator = Evaluator.new
     @input_buffer = []
     @bracket_stack = []
@@ -85,7 +85,7 @@ class REPL
       when '}'
         @bracket_stack.pop if @bracket_stack.last == '}'
       when '<'
-        # if文のときのみ< > をペアとして扱う
+        # if文とwhile文のときのみ< > をペアとして扱う
         @bracket_stack << '>' if in_condition_context?(line, i)
       when '>'
         @bracket_stack.pop if @bracket_stack.last == '>'
@@ -97,8 +97,8 @@ class REPL
     before_text = line[0...position]
     after_text = line[position..-1]
 
-    before_text.match?(/\b(if|else-if)\s*$/) ||
-    (before_text.match?(/\b(if|else-if)\b/) && !after_text.include?('{'))
+    before_text.match?(/\b(if|else-if|while)\s*$/) ||
+    (before_text.match?(/\b(if|else-if|while)\b/) && !after_text.include?('{'))
   end
 
   def process_input
@@ -139,11 +139,30 @@ class REPL
         - Press Enter twice on empty line to force execution
 
       Examples:
+        # Basic arithmetic
         x = 42
+        y = x + 8
+
+        # If statement
         if < x > 40 > {
           result = 1
         } else {
           result = 0
+        }
+
+        # While loop
+        counter = 0
+        while < counter < 5 > {
+          counter = counter + 1
+        }
+
+        # Factorial calculation
+        n = 5
+        factorial = 1
+        i = 1
+        while < i =< n > {
+          factorial = factorial * i
+          i = i + 1
         }
 
     HELP
