@@ -20,6 +20,8 @@ class Lexer
     case current_char
     when /\d/ then read_number
     when /[a-zA-Z_]/ then read_identifier_or_keyword
+    when '"' then read_string('"')
+    when "'" then read_string("'")
     when '+' then advance; Token.new(:plus)
     when '-' then advance; Token.new(:minus)
     when '*' then advance; Token.new(:asterisk)
@@ -101,8 +103,49 @@ class Lexer
     when 'else-if' then Token.new(:else_if)
     when 'else' then Token.new(:else)
     when 'while' then Token.new(:while)
+    when 'hyouji' then Token.new(:hyouji)
     else Token.new(:identifier, text)
     end
+  end
+
+  def read_string(quote)
+    advance # 開始クォート
+
+    result = ""
+
+    until eol? || current_char == quote
+      if current_char == '\\'
+        advance
+
+        if eol?
+          raise "Unterminated string: unexpected end of input after escape character"
+        end
+
+        result +=
+          case current_char
+          when 'n' then "\n"
+          when 't' then "\t"
+          when 'r' then "\r"
+          when '\\' then "\\"
+          when '"' then "\""
+          when "'" then "'"
+          else
+            raise "Unknown escape sequence: \\#{current_char}"
+          end
+
+        advance
+      else
+        result += current_char
+        advance
+      end
+    end
+
+    if eol?
+      raise "Unterminated string: missing closing #{quote}"
+    end
+
+    advance # 終了クォート
+    Token.new(:string, result)
   end
 
   def eol?
