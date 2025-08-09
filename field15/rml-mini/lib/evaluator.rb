@@ -11,7 +11,7 @@ class Evaluator
   # node を受け取って再帰的に評価する
   def evaluate(node)
     case node
-    when Node::Integer, Node::Boolean
+    when Node::Integer, Node::Boolean, Node::String
       node.value
     when Node::Variable
       @environment.lookup(node.name)
@@ -39,6 +39,8 @@ class Evaluator
       eval_if_statement(node)
     when Node::WhileStatement
       eval_while_statement(node)
+    when Node::HyoujiStatement
+      eval_hyouji_statement(node)
     when Node::Block
       eval_block(node)
     else
@@ -53,7 +55,12 @@ class Evaluator
   # 2項演算の評価
   def eval_binary_op(lhs, op, rhs)
     case op
-    when :plus then lhs + rhs
+    when :plus
+      if string?(lhs) || string?(rhs)
+        to_str(lhs) + to_str(rhs) # 文字列連結(暗黙の型変換を含む)
+      else
+        lhs + rhs
+      end
     when :minus then lhs - rhs
     when :asterisk then lhs * rhs
     when :slash then lhs / rhs
@@ -118,6 +125,11 @@ class Evaluator
     result
   end
 
+  def eval_hyouji_statement(node)
+    value = evaluate(node.expression)
+    puts format_for_output(value)
+  end
+
   def eval_block(node)
     return nil if node.statements.empty?
 
@@ -131,6 +143,32 @@ class Evaluator
   end
 
   def boolean?(value) = value.is_a?(TrueClass) || value.is_a?(FalseClass)
+
+  def string?(value) = value.is_a?(String)
+
+  # 値を文字列に変換
+  def to_str(value)
+    case value
+    when String then value
+    when Integer then value.to_s
+    when TrueClass then "true"
+    when FalseClass then "false"
+    when NilClass then "nil"
+    else value.to_s
+    end
+  end
+
+  # 出力用のフォーマット
+  def format_for_output(value)
+    case value
+    when String then value
+    when Integer then value.to_s
+    when TrueClass then "true"
+    when FalseClass then "false"
+    when NilClass then "nil"
+    else value.to_s
+    end
+  end
 
   def no_variables? = @environment.empty?
 end
