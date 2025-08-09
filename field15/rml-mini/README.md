@@ -338,11 +338,108 @@ STEP8ではインタプリタに文字列型と文字列操作機能を導入し
   - `hyouji`文による値の出力
   - 基本的な構文: `hyouji < expression >`
   - hyouji は常に`nil`を返す
+
+#### 文法規則
+```txt
+txtstatement     = assignment | if_statement | while_statement | hyouji_statement | expression ;
+assignment    = identifier "=" expression ;
+if_statement  = "if" "<" expression ">" block ("else-if" "<" expression ">" block)* ("else" block)? ;
+while_statement = "while" "<" expression ">" block ;
+hyouji_statement = "hyouji" "<" expression ">" ;
+block         = "{" statement* "}" ;
+expression    = comparison ;
+comparison    = concatenation ( ("==" | "!=" | "<" | ">" | "=<" | "=>") concatenation )? ;
+concatenation = addition ( "+" addition )* ;
+addition      = multiplication ( ("+" | "-") multiplication )* ;
+multiplication = factor ( ("*" | "/") factor )* ;
+factor        = integer | boolean | string | identifier | "(" expression ")" ;
+boolean       = "true" | "false" ;
+string        = '"' character* '"' | "'" character* "'" ;
+identifier    = letter ( letter | digit )* ;
+integer       = digit+ ;
+```
+#### 使用例
+
+```rb
+# 文字列リテラル
+message = "Hello, World!"
+name = 'Alice'
+
+# 文字列連結
+greeting = "Hello, " + name
+full_message = greeting + "!"
+hyouji < full_message >  # "Hello, Alice!"
+
+# 数値との連結
+age = 25
+info = name + " is " + age + " years old"
+hyouji < info >  # "Alice is 25 years old"
+
+# エスケープシーケンス
+quote = "She said \"Hello\" to me"
+newline_text = "First line\nSecond line"
+
+# 複雑な例
+counter = 0
+while < counter < 3 > {
+  hyouji < "Count: " + counter >
+  counter = counter + 1
+}
+# 出力:
+# Count: 0
+# Count: 1
+# Count: 2
+
+# 条件分岐との組み合わせ
+score = 85
+if < score => 90 > {
+  grade = "A"
+} else-if < score => 80 > {
+  grade = "B"
+} else {
+  grade = "C"
+}
+hyouji < "Your grade is: " + grade >
+```
+
+#### 実装のポイント
+1. 新しいASTノード: `Node::String`と`Node::HyoujiStatement`を追加
+  - `Node::String`: 文字列値を保持
+  - `Node::HyoujiStatement`: 出力する式のASTを保持
+2. Lexerの拡張: 文字列リテラルと`hyouji`キーワードを認識
+  - `read_string`メソッドを追加(ダブルクォートとシングルクォートに対応)
+  - エスケープシーケンスの処理
+  - `hyouji`キーワードの認識
+3. Parserの拡張
+  - `hyouji_statement`メソッドを追加
+  - `factor`メソッドに文字列リテラルの解析を追加
+  - 文字列連結の優先順位を適切に設定
+4. Evaluatorの拡張
+  - 文字列型の評価ロジックを導入
+  - `+`演算子の拡張(文字列連結と数値加算の両方に対応)
+  - 型変換のルール実装
+
+#### 型変換ルール
+文字列連結時の方変換規則
+- 文字列 + 文字列 → 文字列連結
+- 文字列 + 数値 → 数値を文字列に連結してから結合
+- 数値 + 文字列 → 数値を文字列に変換してから結合
+- Boolean + 文字列 → Booleanを文字列("true", "false")に変換してから連結
+
+#### 演算子の優先順位（変更なし）
+
+1. 括弧 `( )`
+2. 乗除算 `*, /`
+3. 加減算 `+, -`
+4. 比較演算子 `==, !=, <, >, =<, =>`
+
+#### エラーハンドリング
+- 未終了の文字列リテラル（クォートが閉じられていない）
+- サポートされていないエスケープシーケンス
+- 文字列に対する不適切な演算（減算、乗算、除算など）
+
 ### 今後（予定）
-- STEP8: 文字列操作
-  - 文字列型の追加
-  - 文字列の連結機能の実装
-  - 出力機能の実装
+
 - STEP9: 関数の導入
   - 関数定義と呼び出し
   - 引数戻り値のサポート
