@@ -2,6 +2,13 @@ require_relative 'lexer'
 require_relative 'node'
 
 class ParserStep6
+  # 各括弧のタイプに対応する開始・終了トークンのマッピング
+  DELIMITER_TOKENS = {
+    paren: [:l_paren, :r_paren], # ()
+    brace: [:l_brace, :r_brace], # {}
+    angle: [:less, :greater] # <>
+  }
+
   def self.parse(input)
     new(input).parse
   end
@@ -16,7 +23,7 @@ class ParserStep6
 
     # エラー処理
     if @current_token.type != :eol
-      raise "Unexpected token: #{@current_token.value}"
+      raise "Unexpected token: #{@current_token.inspect}"
     end
 
     result
@@ -39,34 +46,17 @@ class ParserStep6
   end
 
   def if_statement
-    consume(:if)
-    consume(:less)
-    condition = comparison
-    consume(:greater)
-    consume(:l_brace)
-    then_body = statements
-    consume(:r_brace)
+    condition, then_body = parse_conditional_branch(:if)
 
     else_ifs = []
     while @current_token.type == :else_if
-      consume(:else_if)
-      consume(:less)
-      elseif_condition = comparison
-      consume(:greater)
-      consume(:l_brace)
-      elseif_body = statements
-      consume(:r_brace)
+      else_if_condition, else_if_body = parse_conditional_branch(:else_if)
 
-      else_ifs << { condition: elseif_condition, body: elseif_body }
+      else_ifs << { condition: else_if_condition, body: else_if_body }
     end
 
     else_body = if @current_token.type == :else
-                  consume(:else)
-                  consume(:l_brace)
-                  result = statements
-                  consume(:r_brace)
-
-                  result
+                  parse_conditional_branch(:else).last
                 end
 
     Node::IfStatement.new(condition, then_body, else_ifs, else_body)
@@ -89,8 +79,6 @@ class ParserStep6
 
     result
   end
-
-
 
   def statements
     statements = []
@@ -137,9 +125,7 @@ class ParserStep6
       node = Node::Integer.new(@current_token.value)
       consume(:int)
     elsif @current_token.type == :l_paren
-      consume(:l_paren)
-      node = comparison
-      consume(:r_paren)
+      node = with_delimiters(type: :paren) { comparison }
     elsif @current_token.type == :identifier
       value = @current_token.value
       consume(:identifier)
@@ -151,7 +137,7 @@ class ParserStep6
       consume(:false)
       node = Node::Boolean.new(false)
     else
-      raise "Unexpected token: #{@current_token.value}"
+      raise "Unexpected token: #{@current_token.inspect}"
     end
     node
   end
@@ -167,5 +153,25 @@ class ParserStep6
     end
 
     @current_token = @lexer.next_token
+  end
+
+  def parse_conditional_branch(keyword)
+    consume(keyword)
+    condition = with_delimiters(type: :angle) { comparison } if %i[if else_if].include?(keyword)
+    body = with_delimiters(type: :brace) { statements }
+
+    [condition, body]
+  end
+
+  def with_delimiters(type: :paren)
+    left, right = DELIMITER_TOKENS.fetch(type) do
+      raise "Unknown delimiter type: #{type}"
+    end
+
+    consume(left)
+    result = yield
+    consume(right)
+
+    result
   end
 end
