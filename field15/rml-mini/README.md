@@ -440,6 +440,157 @@ hyouji("Your grade is: " + grade)
 - サポートされていないエスケープシーケンス
 - 文字列に対する不適切な演算（減算、乗算、除算など）
 
+### Step9: 関数の導入
+STEP9ではインタプリタに関数機能を導入します。関数定義、関数呼び出し、引数、戻り値、スコープを実装することで、より構造化されたプログラミングが可能になります。
+
+#### 実装する機能
+1. 関数定義の実装
+  - 基本的な構文: `func function_name(param1, param2) { statements }`
+  - パラメータなしの関数: `func greet() { statements }`
+  - 関数名に`?`や`!`を含むことが可能: `func even?() {}`, `func clear!() {}`
+  - 関数内でのローカル変数とスコープ
+2. 関数呼び出し
+  - 基本的な構文: `function_name(arg1, arg2)`
+  - 引数なしの呼び出し: `function_name()`
+  - 式の中での関数呼び出し: `x = add(1, 2) + 3`
+3. 戻り値の実装
+  - `return`文による明示的な戻り値
+  - `return`文がない場合は最後の式の値を返す(Rubyと同じ)
+  - `return`文のみの場合は`nil`を返す
+4. スコープの管理の実装
+  - 関数内でのローカルスコープ
+  - グローバル変数とローカル変数の適切な管理
+  - 引数のローカルスコープでの扱い
+
+#### 文法規則
+基本的な文法規則は以下のようになります
+
+```txt
+statement     = assignment | if_statement | while_statement | hyouji_statement | function_def | return_statement | expression ;
+assignment    = identifier "=" expression ;
+if_statement  = "if" "<" expression ">" block ("else-if" "<" expression ">" block)* ("else" block)? ;
+while_statement = "while" "<" expression ">" block ;
+hyouji_statement = "hyouji" "(" expression ")" ;
+function_def  = "func" identifier "(" parameter_list? ")" block ;
+return_statement = "return" expression? ;
+parameter_list = identifier ("," identifier)* ;
+block         = "{" statement* "}" ;
+expression    = comparison ;
+comparison    = concatenation ( ("==" | "!=" | "<" | ">" | "=<" | "=>") concatenation )? ;
+concatenation = addition ( "+" addition )* ;
+addition      = multiplication ( ("+" | "-") multiplication )* ;
+multiplication = factor ( ("*" | "/") factor )* ;
+factor        = integer | boolean | string | identifier | function_call | "(" expression ")" ;
+function_call = identifier "(" argument_list? ")" ;
+argument_list = expression ("," expression)* ;
+boolean       = "true" | "false" ;
+string        = '"' character* '"' | "'" character* "'" ;
+identifier    = letter ( letter | digit | "?" | "!" )* ;
+integer       = digit+ ;
+```
+
+#### 使用例
+
+```rb
+# 基本的な関数定義と呼び出し
+func greet() {
+  hyouji("Hello, World!")
+}
+greet()  # "Hello, World!"
+
+# 引数ありの関数
+func add(a, b) {
+  return a + b
+}
+result = add(3, 4)  # => 7
+
+# 複雑な関数
+func factorial(n) {
+  if < n =< 1 > {
+    return 1
+  } else {
+    return n * factorial(n - 1)
+  }
+}
+fact5 = factorial(5)  # => 120
+
+# ローカル変数
+func calculate() {
+  local_var = 10
+  temp = local_var * 2
+  return temp + 5
+}
+result = calculate()  # => 25
+# local_var と temp はここではアクセス不可
+
+# 関数を使ったFizzBuzz
+func fizzbuzz(n) {
+  i = 1
+  while < i =< n > {
+    if < i / 15 * 15 == i > {
+      hyouji("FizzBuzz")
+    } else-if < i / 3 * 3 == i > {
+      hyouji("Fizz")
+    } else-if < i / 5 * 5 == i > {
+      hyouji("Buzz")
+    } else {
+      hyouji(i)
+    }
+    i = i + 1
+  }
+}
+fizzbuzz(15)
+
+# 戻り値を使った条件分岐
+func is_even(n) {
+  return n / 2 * 2 == n
+}
+
+if < is_even(4) > {
+  hyouji("4 is even")
+} else {
+  hyouji("4 is odd")
+}
+```
+#### 実装のポイント
+1. 新しいASTノードの追加
+  - `Node::FunctionDef`: 関数定義(名前、パラメータ、本体)
+  - `Node::FunctionCall`: 関数呼び出し(名前、引数)
+  - `Node::ReturnStatement`: return 文(戻り値の式)
+2. Lexerの拡張
+  - `func`と`return`キーワードの認識
+  - `,`(カンマ)トークンの追加
+  - 関数名での`?`や`!`文字のサポート
+3. Parserの拡張
+  - `function_def`メソッド: 関数定義の解析
+  - `function_call`メソッド: 関数呼び出しの解析
+  - `return_statement`メソッド: return文の解析
+4. Evaluatorの拡張
+  - 関数環境への登録
+  - 関数呼び出し時の新しいスコープの作成
+  - 引数とパラメータのマッピング
+  - return文の処理(例外を使った制御フロー)
+5. Environment（スコープの管理）の拡張
+  - 親スコープへの参照を持つ階層構造
+  - 関数呼び出し時の新しい環境の作成
+
+#### スコープルール
+- グローバルスコープ: REPL最上位で定義された変数と関数
+- ローカルスコープ: 関数内で定義された変数(引数含む)
+- 変数解決順序: ローカル→グローバル
+- 関数: 常にグローバルスコープに定義される
+
+#### エラーハンドリング
+- 未定義関数の呼び出し
+- 引数の数の不一致
+- return文が関数外で使用された場合
+- 関数の重複定義
+
+#### 戻り値の仕様
+- `return expression`: 指定した式の評価結果を返す
+- `return`: `nil`を返す
+- return文なし: 関数本体の最後の式の値を返す(nilの場合もある)
+
 ### 今後（予定）
 
 - STEP9: 関数の導入
