@@ -1,6 +1,7 @@
 class Environment
   def initialize(parent = nil)
     @values = {}
+    @functions = {}
     @parent = parent
   end
 
@@ -38,5 +39,30 @@ class Environment
     vars.merge!(@parent.all_variables) if @parent
 
     vars
+  end
+
+  def empty? = @values.empty? && @functions.empty?
+
+  def define_function(function_def_node)
+    @functions[function_def_node.name] = function_def_node
+  end
+
+  def lookup_function(name)
+    if @functions.key?(name)
+      @functions[name]
+    elsif @parent
+      @parent.lookup_function(name)
+    else
+      raise "未定義の関数です: #{name}"
+    end
+  end
+
+  def function_exists?(name) = @functions.key?(name) || (@parent && @parent.function_exists?(name))
+
+  def all_functions
+    funcs = @functions.dup
+    funcs.merge!(@parent.all_functions) if @parent
+
+    funcs
   end
 end
