@@ -1,11 +1,22 @@
 require_relative 'environment'
 
 class Evaluator
+  class ReturnException < StandardError
+    attr_reader :value
+
+    def initialize(value)
+      @value = value
+      super
+    end
+  end
+
   # 無限ループ対策のための実行ステップ制限
   MAX_LOOP_ITERATIONS = 10000
+  MAX_RECURSION_DEPTH = 1000
 
   def initialize
     @environment = Environment.new
+    @recursion_depth = 0
   end
 
   # node を受け取って再帰的に評価する
@@ -43,6 +54,12 @@ class Evaluator
       eval_hyouji_statement(node)
     when Node::Block
       eval_block(node)
+    when Node::FunctionDef
+      eval_function_def(node)
+    when Node::FunctionCall
+      eval_function_call(node)
+    when Node::ReturnStatement
+      eval_return_statement(node)
     else
       raise "Unknown node type: #{node.class}"
     end
@@ -134,6 +151,52 @@ class Evaluator
     return nil if node.statements.empty?
 
     node.statements.map { |statement| evaluate(statement) }.last
+  end
+
+  def eval_function_def(node)
+    @environment.define_function(node)
+
+    node.name
+  end
+
+  def eval_function_call(node)
+    if @recursion_depth >= MAX_RECURSION_DEPTH
+      raise "Maximum recursion depth exceeded (#{MAX_RECURSION_DEPTH})"
+    end
+
+    function_def = @environment.lookup_function(node.name)
+
+    # 引数の数をチェック
+    unless node.arguments.size == function_def.parameters.size
+      raise "Wrong number of arguments for '#{node.name}': expected #{function_def.parameters.size}, got #{node.arguments.size}"
+    end
+
+    argument_values = node.arguments.map { evaluate(it) }
+
+    function_env = Environment.new(@environment)
+
+    function_def.parameters.zip(argument_values) do |param, value|
+      function_env.define(param, value)
+    end
+
+    prev_env = @environment
+    @environment = function_env
+    @recursion_depth += 1
+
+    begin
+      evaluate(function_def.body)
+    rescue ReturnException => e
+      e.value
+    ensure
+      @environment = prev_env
+      @recursion_depth -= 1
+    end
+  end
+
+  def eval_return_statement(node)
+    value = node.expression ? evaluate(node.expression) : nil
+
+    raise ReturnException.new(value)
   end
 
   def ensure_boolean!(value, context = "The condition of an if")
