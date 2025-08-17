@@ -31,5 +31,12 @@ class Environment
   def var_exists?(name)
     @values.key?(name) || (@parent && @parent.var_exists?(name))
   end
+
+  def all_variables
+    vars = @values.dup
+    vars.merge!(@parent.all_variables) if @parent
+
+    vars
+  end
 end
 

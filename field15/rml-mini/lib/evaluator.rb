@@ -42,6 +42,8 @@ class Evaluator
     end
   end
 
+  def variables = @environment.all_variables
+
   private
 
   # 2項演算の評価
