@@ -1,11 +1,11 @@
-require_relative '../lib/parser_step8'
+require_relative '../lib/parser_step9'
 require_relative '../lib/evaluator'
 
 class REPL
   INDENT_SIZE = 2
 
   def initialize
-    @parser = ParserStep8
+    @parser = ParserStep9
     @evaluator = Evaluator.new
     @input_buffer = []
     @bracket_stack = []
@@ -52,6 +52,7 @@ class REPL
       puts "Input buffer cleared."
     when 'show' then show_current_input
     when 'vars' then show_variables
+    when 'funcs' then show_functions
     when ''
       return if @input_buffer.empty?
 
@@ -89,6 +90,11 @@ class REPL
         @bracket_stack << '>' if in_condition_context?(line, i)
       when '>'
         @bracket_stack.pop if @bracket_stack.last == '>'
+      when '('
+        # 関数呼び出しの文脈かどうかチェック
+        @bracket_stack << ')' if in_parentheses_context?(line, i)
+      when ')'
+        @bracket_stack.pop if @bracket_stack.last == ')'
       end
     end
   end
@@ -97,8 +103,19 @@ class REPL
     before_text = line[0...position]
     after_text = line[position..-1]
 
-    before_text.match?(/\b(if|else-if|while)\s*$/) ||
+    before_text.match?(/\b(if|else-if|while)\s*\z/) ||
     (before_text.match?(/\b(if|else-if|while)\b/) && !after_text.include?('{'))
+  end
+
+  def in_parentheses_context?(line, position)
+    before_text = line[0...position]
+    after_text = line[position..-1]
+
+    before_text.match?(/\bfunc\s+\w[\w?!]*\s*\z/) || # func name(...
+    before_text.match?(/\w[\w?!]*\s*\z/) || # identifier(...
+    before_text.match?(/\bhyouji\s*\z/) || # hyouji(
+    before_text.match?(/[+\-*\/=<>!]\s*\z/) || # 数式のかっこ
+    (@bracket_stack.include?(')') && !after_text.include?('}'))
   end
 
   def process_input
@@ -195,6 +212,27 @@ class REPL
       Variable inspection not yet implemented.
       Please add the 'variables' method to your Evaluator class.
     VARS
+  end
+
+  def show_functions
+    begin
+      funcs = @evaluator.instance_variable_get(:@environment).all_functions
+
+      if funcs.empty?
+        puts "No functions defined"
+      else
+        puts "Defined functions:"
+        funcs.each do |name, |
+          params = @evaluator
+            .instance_variable_get(:@environment)
+            .lookup_function(name)
+            .parameters.join(", ")
+          puts "  #{name}(#{params})"
+        end
+      end
+    rescue => e
+      puts "Could not retrieve function list: #{e.message}"
+    end
   end
 
   def reset_state

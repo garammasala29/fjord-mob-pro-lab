@@ -32,6 +32,7 @@ class Lexer
     when '}' then advance; Token.new(:r_brace)
     when '<' then advance; Token.new(:less)
     when '>' then advance; Token.new(:greater)
+    when ',' then advance; Token.new(:comma)
     when '='
       if peek_char == '=' # '=='
         2.times { advance }
@@ -93,7 +94,7 @@ class Lexer
 
   def read_identifier_or_keyword
     start_index = @index
-    advance while current_char&.match?(/[\w-]/) # else-ifようにハイフン追加
+    advance while current_char&.match?(/[\w\-!?]/)
 
     text = @input[start_index...@index]
     case text
@@ -104,6 +105,8 @@ class Lexer
     when 'else' then Token.new(:else)
     when 'while' then Token.new(:while)
     when 'hyouji' then Token.new(:hyouji)
+    when 'func' then Token.new(:func)
+    when 'return' then Token.new(:return)
     else Token.new(:identifier, text)
     end
   end
