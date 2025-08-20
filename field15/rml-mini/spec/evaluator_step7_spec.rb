@@ -514,31 +514,7 @@ RSpec.describe Evaluator do
       end
 
       it "executes exactly at iteration limit" do
-        # カウンタを使って正確に上限-1まで実行
-        subject.evaluate(Node::Assignment.new("counter", Node::Integer.new(0)))
-        subject.evaluate(Node::Assignment.new("limit", Node::Integer.new(9998)))
-
-        condition = Node::ComparisonOp.new(
-          Node::Variable.new("counter"),
-          :equal_less,
-          Node::Variable.new("limit")
-        )
-        body = Node::Assignment.new(
-          "counter",
-          Node::BinaryOp.new(
-            Node::Variable.new("counter"),
-            :plus,
-            Node::Integer.new(1)
-          )
-        )
-        while_node = Node::WhileStatement.new(condition, body)
-
-        # 9999回実行されるはず（0から9998まで）
-        expect(subject.evaluate(while_node)).to eq(9999)
-        expect(subject.evaluate(Node::Variable.new("counter"))).to eq(9999)
-      end
-
-      it "raises error when exceeding iteration limit by one" do
+        # カウンタを使って正確に上限まで実行
         subject.evaluate(Node::Assignment.new("counter", Node::Integer.new(0)))
         subject.evaluate(Node::Assignment.new("limit", Node::Integer.new(9999)))
 
@@ -557,7 +533,31 @@ RSpec.describe Evaluator do
         )
         while_node = Node::WhileStatement.new(condition, body)
 
-        # 10000回実行しようとして上限（10000）を超える
+        # 10000回実行されるはず（0から9999まで）
+        expect(subject.evaluate(while_node)).to eq(10000)
+        expect(subject.evaluate(Node::Variable.new("counter"))).to eq(10000)
+      end
+
+      it "raises error when exceeding iteration limit by one" do
+        subject.evaluate(Node::Assignment.new("counter", Node::Integer.new(0)))
+        subject.evaluate(Node::Assignment.new("limit", Node::Integer.new(10000)))
+
+        condition = Node::ComparisonOp.new(
+          Node::Variable.new("counter"),
+          :equal_less,
+          Node::Variable.new("limit")
+        )
+        body = Node::Assignment.new(
+          "counter",
+          Node::BinaryOp.new(
+            Node::Variable.new("counter"),
+            :plus,
+            Node::Integer.new(1)
+          )
+        )
+        while_node = Node::WhileStatement.new(condition, body)
+
+        # 10001回実行しようとして上限（10001）を超える
         expect { subject.evaluate(while_node) }.to raise_error(/Loop exceeded maximum iterations/)
       end
     end
