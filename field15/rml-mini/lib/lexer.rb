@@ -19,6 +19,8 @@ class Lexer
     case current_char
     when /\d/ then read_number
     when /[a-zA-Z_]/ then read_identifier_or_keyword
+    when "'" then read_string("'")
+    when '"' then read_string('"')
     when '+'
       advance
       Token.new(:plus)
@@ -111,6 +113,50 @@ class Lexer
     Token.new(:int, @input[start_index...@index].to_i)
   end
 
+  def read_string(quote)
+    advance # 開始クォート
+    result = ""
+
+    until eol? || current_char == quote
+      if current_char == '\\'
+        advance # エスケープの文字 \
+
+        if eol?
+          raise "Unterminated string: unexpected end of input after escape character"
+        end
+
+        case current_char
+        when 'n'
+          result << "\n"
+        when 't'
+          result << "\t"
+        when 'r'
+          result << "\r"
+        when '\\'
+          result << "\\"
+        when '"'
+          result << "\""
+        when "'"
+          result << "'"
+        else
+          raise "Unknown escape sequence: \\#{current_char}"
+        end
+
+        advance # エスケープされた文字
+      else
+        result << current_char
+        advance
+      end
+    end
+
+    if eol?
+      raise "Unterminated string: missing closing #{quote}"
+    end
+
+    advance
+    Token.new(:string, result)
+  end
+
   def read_identifier_or_keyword
     start_index = @index
     advance while current_char&.match?(/[\w-]/)
@@ -129,6 +175,8 @@ class Lexer
       Token.new(:else)
     when 'while'
       Token.new(:while)
+    when 'hyouji'
+      Token.new(:hyouji)
     else
       Token.new(:identifier, text)
     end

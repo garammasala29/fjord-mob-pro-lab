@@ -15,6 +15,14 @@ module Node
     end
   end
 
+  class String
+    attr_reader :value
+
+    def initialize(value)
+      @value = value
+    end
+  end
+
   class BinaryOp
     attr_reader :lhs, :rhs, :op
 
@@ -69,6 +77,14 @@ module Node
     def initialize(condition, body)
       @condition = condition
       @body = body
+    end
+  end
+
+  class HyoujiStatement
+    attr_reader :expression
+
+    def initialize(expression)
+      @expression = expression
     end
   end
 
