@@ -95,4 +95,31 @@ module Node
       @statements = statements
     end
   end
+
+  class FunctionDef
+    attr_reader :name, :params, :body
+
+    def initialize(name, params, body)
+      @name = name
+      @params = params
+      @body = body
+    end
+  end
+
+  class FunctionCall
+    attr_reader :name, :arguments
+
+    def initialize(name, arguments = [])
+      @name = name
+      @arguments = arguments
+    end
+  end
+
+  class ReturnStatement
+    attr_reader :expression
+
+    def initialize(expression)
+      @expression = expression
+    end
+  end
 end

@@ -1,4 +1,4 @@
-require_relative '../lib/parser_step8'
+require_relative '../lib/parser_step9'
 require_relative '../lib/evaluator'
 puts 'Ruby Mini Language REPL'
 puts "Type 'exit' to quit"
@@ -7,7 +7,7 @@ class REPL
   INDENT_SIZE = 2
 
   def initialize
-    @parser = ParserStep8
+    @parser = ParserStep9
     @evaluator = Evaluator.new
     @input_buffer = []
     @bracket_stack = []
@@ -91,6 +91,10 @@ class REPL
         @bracket_stack << '>' if in_condition_context?(line, i)
       when '>'
         @bracket_stack.pop if @bracket_stack.last == '>'
+      when '('
+        @bracket_stack << ')' if in_parentheses_context?(line, i)
+      when ')'
+        @bracket_stack.pop if @bracket_stack.last == ')'
       end
     end
   end
@@ -102,6 +106,17 @@ class REPL
 
     before_text.match?(/\b(if|else-if)\s*\z/)
     # 実装意図がわからないのでコメントアウトした ||(before_text.match?(/\b(if|else-if)\b/) && !after_text.include?('{'))
+  end
+
+  def in_parentheses_context?(line, position)
+    before_text = line[0...position]
+    after_text = line[position..-1]
+
+    before_text.match?(/\bfunc\s+\w[\w?!]*\s*\z/) || # func name(...
+    before_text.match?(/\w[\w?!]*\s*\z/) || # identifier(...
+    before_text.match?(/\bhyouji\s*\z/) || # hyouji(
+    before_text.match?(/[+\-*\/=<>!]\s*\z/) || # 数式のかっこ
+    (@bracket_stack.include?(')') && !after_text.include?('}'))
   end
 
   def process_input

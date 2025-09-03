@@ -1,11 +1,22 @@
 require_relative 'environment'
 
 class Evaluator
+  class ReturnException < StandardError
+    attr_reader :value
+
+    def initialize(value)
+      @value = value
+      super
+    end
+  end
+
   # 無限ループ対策のための実行ステップ制限
   MAX_LOOP_ITERATIONS = 10000
+  MAX_RECURSION_DEPTH = 1000
 
   def initialize
     @environment = Environment.new
+    @recursion_depth = 0
   end
 
   # node を受け取って再帰的に評価する
@@ -44,6 +55,12 @@ class Evaluator
       eval_hyouji_statement(node)
     when Node::Block
       eval_block(node)
+    when Node::FunctionDef
+      eval_function_def(node)
+    when Node::ReturnStatement
+      eval_return_statement(node)
+    when Node::FunctionCall
+      eval_function_call(node)
     else
       raise "Unknown node type: #{node.class}"
     end
@@ -134,6 +151,44 @@ class Evaluator
     return nil if node.statements.empty?
 
     node.statements.map { |statement| evaluate(statement) }.last
+  end
+
+  def eval_function_def(node)
+    @environment.define_function(node)
+
+    node.name
+  end
+
+  def eval_return_statement(node)
+    value = node.expression ? evaluate(node.expression) : nil
+
+    raise ReturnException.new(value)
+  end
+
+  def eval_function_call(node)
+    function = @environment.lookup_function(node.name)
+    raise "Wrong number of arguments for '#{node.name}': expected #{function.params.size}, got #{node.arguments.size}" if node.arguments.size != function.params.size
+
+    argument_values = node.arguments.map { evaluate(_1) }
+
+    function_env = Environment.new(@environment)
+
+    function.params.zip(argument_values) do |param, value|
+      function_env.define(param, value)
+    end
+
+    prev_env = @environment
+    @environment = function_env
+    @recursion_depth += 1
+
+    begin
+      evaluate(function.body)
+    rescue ReturnException => e
+      e.value
+    ensure
+      @environment = prev_env
+      @recursion_depth -= 1
+    end
   end
 
   def ensure_boolean!(cond_result, context = "The condition of an if")

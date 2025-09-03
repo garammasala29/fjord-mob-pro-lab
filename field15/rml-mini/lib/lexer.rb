@@ -75,6 +75,9 @@ class Lexer
       else
         raise "Unknown character #{current_char}"
       end
+    when ','
+      advance
+      Token.new(:comma)
     else
       raise "Unknown character #{current_char}"
     end
@@ -159,7 +162,7 @@ class Lexer
 
   def read_identifier_or_keyword
     start_index = @index
-    advance while current_char&.match?(/[\w-]/)
+    advance while current_char&.match?(/[\w!?-]/)
 
     text = @input[start_index...@index]
     case text
@@ -177,6 +180,10 @@ class Lexer
       Token.new(:while)
     when 'hyouji'
       Token.new(:hyouji)
+    when 'func'
+      Token.new(:func)
+    when 'return'
+      Token.new(:return)
     else
       Token.new(:identifier, text)
     end

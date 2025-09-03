@@ -1,6 +1,7 @@
 class Environment
   def initialize(parent = nil)
     @values = {}
+    @functions = {}
     @parent = parent
   end
 
@@ -28,6 +29,20 @@ class Environment
     end
   end
 
+  def define_function(function_def_node)
+    @functions[function_def_node.name] = function_def_node
+  end
+
+  def lookup_function(name)
+    if @functions.key?(name)
+      @functions[name]
+    elsif @parent
+      @parent.lookup_function(name)
+    else
+      raise "未定義の関数です: #{name}"
+    end
+  end
+
   def var_exists?(name)
     @values.key?(name) || (@parent && @parent.var_exists?(name))
   end
@@ -39,4 +54,3 @@ class Environment
     vars
   end
 end
-
